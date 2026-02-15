@@ -1,0 +1,20 @@
+---
+Language: Cpp
+UseTab: Always
+TabWidth: 8
+AlignConsecutiveAssignments:
+  Enabled: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+IndentWidth: 8
+PointerAlignment: Left
+ColumnLimit: 0
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: true
+SpaceBeforeParens: Never
+AlignEscapedNewlines: DontAlign
+SortIncludes: false
+AllowShortEnumsOnASingleLine: false
+#IndentPPDirectives: AfterHash
