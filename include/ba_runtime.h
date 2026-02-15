@@ -28,7 +28,6 @@
 #include <nanosvgrast.h>
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #endif
 
 #if defined(_BENZYNA) && defined(_WIN32)
@@ -44,20 +43,24 @@ typedef unsigned char ba_bool;
 #define ba_false ((ba_bool)0)
 #define ba_true ((ba_bool)1)
 
-typedef struct ba_runtime      ba_runtime_t;
-typedef struct ba_target       ba_target_t;
-typedef struct ba_costume      ba_costume_t;
-typedef struct ba_block	       ba_block_t;
-typedef struct ba_blockkv      ba_blockkv_t;
-typedef struct ba_thread       ba_thread_t;
-typedef union ba_input_union   ba_input_union_t;
-typedef struct ba_input	       ba_input_t;
-typedef struct ba_inputkv      ba_inputkv_t;
-typedef struct ba_sprite       ba_sprite_t;
-typedef struct ba_stringkv     ba_stringkv_t;
-typedef struct ba_stringlistkv ba_stringlistkv_t;
+typedef struct ba_runtime_param ba_runtime_param_t;
+typedef struct ba_runtime	ba_runtime_t;
+typedef struct ba_target	ba_target_t;
+typedef struct ba_costume	ba_costume_t;
+typedef struct ba_block		ba_block_t;
+typedef struct ba_blockkv	ba_blockkv_t;
+typedef struct ba_thread	ba_thread_t;
+typedef union ba_input_union	ba_input_union_t;
+typedef struct ba_input		ba_input_t;
+typedef struct ba_inputkv	ba_inputkv_t;
+typedef struct ba_sprite	ba_sprite_t;
+typedef struct ba_stringkv	ba_stringkv_t;
+typedef struct ba_stringlistkv	ba_stringlistkv_t;
 
 typedef unsigned char* (*ba_load_file_t)(ba_runtime_t* rt, const char* path, int* size);
+typedef void (*ba_swap_buffer_t)(ba_runtime_t* rt);
+typedef void (*ba_make_current_t)(ba_runtime_t* rt);
+typedef void (*ba_swap_interval_t)(ba_runtime_t* rt, int interval);
 typedef ba_bool (*ba_check_loop_t)(ba_thread_t* thread);
 
 enum ba_input_type {
@@ -79,13 +82,11 @@ enum ba_status {
 #if defined(_BENZYNA)
 typedef struct ba_texture ba_texture_t;
 
-typedef cJSON	   ba_cJSON;
-typedef GLFWwindow ba_GLFWwindow;
+typedef cJSON ba_cJSON;
 #else
 typedef void ba_texture_t;
 
 typedef void ba_cJSON;
-typedef void ba_GLFWwindow;
 #endif
 
 #if defined(_BENZYNA)
@@ -94,9 +95,20 @@ struct ba_texture {
 };
 #endif
 
+struct ba_runtime_param {
+	ba_load_file_t	   load_file;
+	ba_swap_interval_t swap_interval;
+	ba_make_current_t  make_current;
+	ba_swap_buffer_t   swap_buffer;
+	ba_bool		   turbo;
+	union {
+		const char*   root_path;
+		struct zip_t* zip;
+	};
+};
+
 struct ba_runtime {
-	ba_cJSON*      json;
-	ba_GLFWwindow* window;
+	ba_cJSON* json;
 
 	ba_target_t** targets;
 	ba_thread_t** threads;
@@ -104,13 +116,7 @@ struct ba_runtime {
 
 	void* user;
 
-	union {
-		const char*   root_path;
-		struct zip_t* zip;
-	};
-
-	ba_load_file_t load_file;
-	ba_bool	       turbo;
+	ba_runtime_param_t param;
 };
 
 struct ba_target {
@@ -219,7 +225,7 @@ struct ba_stringlistkv {
 /* runtime.c */
 BADECL void	    ba_runtime_init(ba_runtime_t* rt);
 BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
-BADECL void	    ba_runtime_loop(ba_runtime_t* rt);
+BADECL void	    ba_runtime_step(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
 BADECL int	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);

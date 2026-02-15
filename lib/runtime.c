@@ -8,17 +8,13 @@
 static ba_bool first = ba_true;
 
 void ba_runtime_init(ba_runtime_t* rt) {
-	double scale = 2;
+	ba_runtime_param_t param = rt->param;
 
 	memset(rt, 0, sizeof(*rt));
 
-	if(first) {
-		glfwInit();
-	}
+	rt->param = param;
 
-	rt->window = glfwCreateWindow(BA_WIDTH * scale, BA_HEIGHT * scale, "Benzyna Scratch Runtime", NULL, NULL);
-
-	glfwMakeContextCurrent(rt->window);
+	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
 	if(first) {
 		gladLoadGL();
@@ -26,14 +22,13 @@ void ba_runtime_init(ba_runtime_t* rt) {
 		first = ba_false;
 	}
 
-	glfwSwapInterval(rt->turbo ? 0 : 1);
+	if(rt->param.swap_interval != NULL) rt->param.swap_interval(rt, rt->param.turbo ? 0 : 1);
 
 	glEnable(GL_BLEND);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glViewport(0, 0, BA_WIDTH * scale, BA_HEIGHT * scale);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-BA_WIDTH / 2, BA_WIDTH / 2, -BA_HEIGHT / 2, BA_HEIGHT / 2, -1, 1);
@@ -95,33 +90,29 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 	}
 }
 
-void ba_runtime_loop(ba_runtime_t* rt) {
-	while(!glfwWindowShouldClose(rt->window)) {
-		int	i;
-		ba_bool loop;
+void ba_runtime_step(ba_runtime_t* rt) {
+	int	i;
+	ba_bool loop;
 
-		do {
-			loop = ba_false;
-			for(i = 0; i < arrlen(rt->threads); i++) {
-				if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
-				loop = ba_true;
-
-				ba_thread_exec(rt->threads[i]);
-			}
-		} while(loop);
-
+	do {
+		loop = ba_false;
 		for(i = 0; i < arrlen(rt->threads); i++) {
-			rt->threads[i]->vsync = ba_false;
-			if(rt->threads[i]->stopped) {
-				ba_thread_kill(rt, rt->threads[i]);
-				i--;
-			}
+			if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
+			loop = ba_true;
+
+			ba_thread_exec(rt->threads[i]);
 		}
+	} while(loop);
 
-		ba_render(rt);
-
-		glfwPollEvents();
+	for(i = 0; i < arrlen(rt->threads); i++) {
+		rt->threads[i]->vsync = ba_false;
+		if(rt->threads[i]->stopped) {
+			ba_thread_kill(rt, rt->threads[i]);
+			i--;
+		}
 	}
+
+	ba_render(rt);
 }
 
 void ba_runtime_uninit(ba_runtime_t* rt) {
@@ -154,7 +145,7 @@ ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt) {
 static unsigned char* load_file_extracted(ba_runtime_t* rt, const char* path, int* size) {
 	FILE*	       f;
 	unsigned char* d;
-	char*	       p = ba_string_concat(rt->root_path, "/", path, NULL);
+	char*	       p = ba_string_concat(rt->param.root_path, "/", path, NULL);
 
 	ba_log("Loading %s", p);
 
@@ -180,7 +171,7 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 	unsigned char* d = NULL;
 	int	       errnum;
 
-	if((errnum = zip_entry_open(rt->zip, path)) != 0) {
+	if((errnum = zip_entry_open(rt->param.zip, path)) != 0) {
 		ba_log("Error accessing %s: %s", path, zip_strerror(errnum));
 		return NULL;
 	}
@@ -188,13 +179,13 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 	ba_log("Accessing %s", path);
 
 	/* docs recommend using zip_entry_extract which is 100% possible, but it uses a callback so more stuff has to be defined. refer to commit aeda2a if we want to do that. */
-	if((errnum = zip_entry_read(rt->zip, (void**)&d, (size_t*)size)) < 0) {
+	if((errnum = zip_entry_read(rt->param.zip, (void**)&d, (size_t*)size)) < 0) {
 		ba_log("Error reading %s: %s", path, zip_strerror(errnum));
-		zip_entry_close(rt->zip);
+		zip_entry_close(rt->param.zip);
 		return NULL;
 	};
 
-	zip_entry_close(rt->zip);
+	zip_entry_close(rt->param.zip);
 
 	return d;
 }
@@ -235,10 +226,10 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		fclose(f);
 
-		rt->root_path = path;
-		rt->load_file = load_file_extracted;
+		rt->param.root_path = path;
+		rt->param.load_file = load_file_extracted;
 
-		rt->turbo = ba_false;
+		rt->param.turbo = ba_false;
 		ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	} else {
@@ -279,25 +270,25 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		ba_log("Compression level %d", compression_level);
 
-		rt->zip = zip_openwitherror(path, compression_level, 'r', &errnum);
+		rt->param.zip = zip_openwitherror(path, compression_level, 'r', &errnum);
 		if(errnum != 0) {
 			ba_log("Error opening %s: %s", f, zip_strerror(errnum));
 			return 1;
 		}
 
-		if((errnum = zip_entry_open(rt->zip, "project.json")) != 0) {
+		if((errnum = zip_entry_open(rt->param.zip, "project.json")) != 0) {
 			ba_log("Error accessing %s/project.json: %s", f, zip_strerror(errnum));
 			return 1;
 		}
 
-		sz = zip_entry_size(rt->zip);
+		sz = zip_entry_size(rt->param.zip);
 
-		zip_entry_read(rt->zip, (void**)&buffer, &sz);
-		zip_entry_close(rt->zip);
+		zip_entry_read(rt->param.zip, (void**)&buffer, &sz);
+		zip_entry_close(rt->param.zip);
 
-		rt->load_file = load_file_zipped;
+		rt->param.load_file = load_file_zipped;
 
-		rt->turbo = ba_false;
+		rt->param.turbo = ba_false;
 		ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	}
