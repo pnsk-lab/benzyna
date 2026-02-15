@@ -76,7 +76,7 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 		if(js != NULL && js->type == cJSON_Number) {
 			spr->angle = js->valuedouble;
 
-			if(spr->angle < 0) spr->angle = 180 + spr->angle;
+			if(spr->angle < 0) spr->angle = 360 + spr->angle - 180;
 			spr->angle -= 90;
 		}
 
