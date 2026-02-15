@@ -40,6 +40,8 @@ typedef unsigned char ze_bool;
 typedef struct ze_runtime ze_runtime_t;
 typedef struct ze_target  ze_target_t;
 typedef struct ze_costume ze_costume_t;
+typedef struct ze_block	  ze_block_t;
+typedef struct ze_blockkv ze_blockkv_t;
 
 typedef unsigned char* (*ze_load_file_t)(ze_runtime_t* rt, const char* path, int* size);
 
@@ -62,7 +64,7 @@ struct ze_texture {
 #endif
 
 struct ze_runtime {
-	ze_cJSON*      root;
+	ze_cJSON*      json;
 	ze_GLFWwindow* window;
 
 	ze_target_t** targets;
@@ -75,6 +77,10 @@ struct ze_target {
 	int costume;
 
 	ze_costume_t** costumes;
+	ze_blockkv_t*  blocks;
+	ze_block_t**   tree;
+
+	ze_cJSON* json;
 };
 
 struct ze_costume {
@@ -87,6 +93,25 @@ struct ze_costume {
 	unsigned char* rgba;
 
 	ze_texture_t* texture;
+
+	ze_cJSON* json;
+};
+
+struct ze_block {
+	ze_block_t* parent;
+	ze_block_t* children;
+	ze_block_t* prev;
+	ze_block_t* next;
+
+	ze_bool toplevel;
+	char*	opcode;
+
+	ze_cJSON* json;
+};
+
+struct ze_blockkv {
+	char*	    key;
+	ze_block_t* value;
 };
 
 /* runtime.c */
@@ -101,6 +126,9 @@ ZEDECL void ze_render(ze_runtime_t* rt);
 /* log.c */
 ZEDECL void ze_log(const char* fmt, ...);
 
+/* string.c */
+ZEDECL char* ze_string_dup(const char* str);
+
 /* texture.c */
 ZEDECL ze_texture_t* ze_texture_load(ze_costume_t* costume);
 ZEDECL void	     ze_texture_free(ze_texture_t* texture);
@@ -112,5 +140,10 @@ ZEDECL void	    ze_target_free(ze_target_t* target);
 /* costume.c */
 ZEDECL ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json);
 ZEDECL void	     ze_costume_free(ze_costume_t* costume);
+
+/* block.c */
+ZEDECL ze_block_t* ze_block_parse(ze_runtime_t* rt, ze_cJSON* json);
+ZEDECL void	   ze_block_print(ze_block_t* block);
+ZEDECL void	   ze_block_free(ze_block_t* block); /* this DOES NOT free tree */
 
 #endif

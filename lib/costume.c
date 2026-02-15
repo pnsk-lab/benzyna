@@ -9,9 +9,18 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 
 	memset(costume, 0, sizeof(*costume));
 
+	costume->json = json;
+
 	if((md5ext = cJSON_GetObjectItem(json, "md5ext")) == NULL || md5ext->type != cJSON_String) {
-		ze_costume_free(costume);
-		return NULL;
+		costume->data	    = NULL;
+		costume->rgba	    = malloc(4);
+		costume->rgba_width = costume->width = 1;
+		costume->rgba_height = costume->height = 1;
+
+		memset(costume->rgba, 0, 4);
+
+		/* TODO: get image from cdn */
+		goto skip;
 	}
 
 	if((dataFormat = cJSON_GetObjectItem(json, "dataFormat")) == NULL || dataFormat->type != cJSON_String) {
@@ -75,6 +84,7 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	}
 	free(data);
 
+skip:;
 	costume->texture = ze_texture_load(costume);
 
 	return costume;

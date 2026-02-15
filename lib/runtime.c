@@ -3,13 +3,15 @@
 static ze_bool first = ze_true;
 
 void ze_runtime_init(ze_runtime_t* rt) {
+	double scale = 2;
+
 	memset(rt, 0, sizeof(*rt));
 
 	if(first) {
 		glfwInit();
 	}
 
-	rt->window = glfwCreateWindow(ZE_WIDTH, ZE_HEIGHT, "Zadrapanie", NULL, NULL);
+	rt->window = glfwCreateWindow(ZE_WIDTH * scale, ZE_HEIGHT * scale, "Zadrapanie", NULL, NULL);
 
 	glfwMakeContextCurrent(rt->window);
 
@@ -24,7 +26,7 @@ void ze_runtime_init(ze_runtime_t* rt) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glViewport(0, 0, ZE_WIDTH, ZE_HEIGHT);
+	glViewport(0, 0, ZE_WIDTH * scale, ZE_HEIGHT * scale);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-ZE_WIDTH / 2, ZE_WIDTH / 2, -ZE_HEIGHT / 2, ZE_HEIGHT / 2, -1, 1);
@@ -36,9 +38,9 @@ void ze_runtime_init(ze_runtime_t* rt) {
 void ze_runtime_load_project(ze_runtime_t* rt, const char* data, int size) {
 	cJSON* targets;
 
-	if((rt->root = cJSON_ParseWithLength(data, size)) == NULL) return;
+	if((rt->json = cJSON_ParseWithLength(data, size)) == NULL) return;
 
-	if((targets = cJSON_GetObjectItem(rt->root, "targets")) == NULL || targets->type != cJSON_Array) return;
+	if((targets = cJSON_GetObjectItem(rt->json, "targets")) == NULL || targets->type != cJSON_Array) return;
 
 	ze_log("%d target(s)", cJSON_GetArraySize(targets));
 
@@ -68,5 +70,5 @@ void ze_runtime_uninit(ze_runtime_t* rt) {
 	for(i = 0; i < arrlen(rt->targets); i++) ze_target_free(rt->targets[i]);
 	arrfree(rt->targets);
 
-	if(rt->root != NULL) cJSON_Delete(rt->root);
+	if(rt->json != NULL) cJSON_Delete(rt->json);
 }
