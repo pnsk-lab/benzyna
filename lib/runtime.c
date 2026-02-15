@@ -64,7 +64,7 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 		ba_sprite_t* spr;
 		cJSON*	     js;
 
-		spr = ba_sprite_start(rt, rt->targets[i], ba_false);
+		spr = ba_sprite_start(rt, rt->targets[i]);
 
 		js = cJSON_GetObjectItem(rt->targets[i]->json, "currentCostume");
 		if(js != NULL && js->type == cJSON_Number) spr->costume = js->valuedouble;
@@ -125,10 +125,23 @@ void ba_runtime_uninit(ba_runtime_t* rt) {
 		ba_thread_kill(rt, rt->threads[i]);
 		i--;
 	}
-	arrfree(rt->targets);
+	arrfree(rt->threads);
+
+	for(i = 0; i < arrlen(rt->sprites); i++) ba_sprite_kill(rt, rt->sprites[i]);
+	arrfree(rt->sprites);
 
 	for(i = 0; i < arrlen(rt->targets); i++) ba_target_free(rt->targets[i]);
 	arrfree(rt->targets);
 
 	if(rt->json != NULL) cJSON_Delete(rt->json);
+}
+
+ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt) {
+	int i;
+
+	for(i = 0; i < arrlen(rt->sprites); i++) {
+		if(rt->sprites[i]->target->stage) return rt->sprites[i];
+	}
+
+	return NULL;
 }

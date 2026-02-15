@@ -42,7 +42,20 @@ ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
 
 	variables = variables->child;
 	while(variables != NULL) {
-		if(variables->type == cJSON_Array) {
+		if(variables->type == cJSON_Array && cJSON_GetArraySize(variables) == 2) {
+			cJSON* e = cJSON_GetArrayItem(variables, 1);
+
+			if(e->type == cJSON_Number) {
+				char* s = malloc(64);
+				sprintf(s, BA_FORMAT_DOUBLE, e->valuedouble);
+
+				shput(target->variables, variables->string, s);
+			} else if(e->type == cJSON_String) {
+				char* s = malloc(strlen(e->valuestring) + 1);
+				strcpy(s, e->valuestring);
+
+				shput(target->variables, variables->string, s);
+			}
 		}
 
 		variables = variables->next;
@@ -53,6 +66,31 @@ ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
 
 	lists = lists->child;
 	while(lists != NULL) {
+		if(lists->type == cJSON_Array && cJSON_GetArraySize(lists) == 2) {
+			cJSON* e = cJSON_GetArrayItem(lists, 1);
+
+			if(e->type == cJSON_Array) {
+				char** a = NULL;
+
+				for(i = 0; i < cJSON_GetArraySize(e); i++) {
+					cJSON* e2 = cJSON_GetArrayItem(e, i);
+
+					if(e2->type == cJSON_Number) {
+						char* s = malloc(64);
+						sprintf(s, BA_FORMAT_DOUBLE, e2->valuedouble);
+
+						arrput(a, s);
+					} else if(e2->type == cJSON_String) {
+						char* s = malloc(strlen(e2->valuestring) + 1);
+						strcpy(s, e2->valuestring);
+
+						arrput(a, s);
+					}
+				}
+
+				shput(target->lists, lists->string, a);
+			}
+		}
 
 		lists = lists->next;
 	}

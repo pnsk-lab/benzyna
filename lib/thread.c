@@ -7,13 +7,14 @@ ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block) {
 
 	thread->block = block;
 
+	thread->runtime = rt;
+
 	arrput(rt->threads, thread);
 
 	return thread;
 }
 
 void ba_thread_stop(ba_thread_t* thread) {
-
 	thread->stopped = ba_true;
 }
 
@@ -26,24 +27,17 @@ static ba_bool control_repeat(ba_thread_t* thread) {
 }
 
 void ba_thread_exec(ba_thread_t* thread) {
+	int st;
 	int n;
 
-	if(strcmp(thread->block->opcode, "looks_say") == 0) {
-		thread->vsync = ba_true;
-	} else if(strcmp(thread->block->opcode, "control_wait") == 0) {
-		thread->vsync = ba_true;
+	n = arrlen(thread->stack);
+	if((st = ba_block_control(thread)) != ba_status_declined) {
+	} else if((st = ba_block_looks(thread)) != ba_status_declined) {
+	} else {
+		st = ba_status_next;
 	}
 
-	n = arrlen(thread->stack);
-	if(strcmp(thread->block->opcode, "control_forever") == 0) {
-		arrput(thread->stack, thread->block);
-		arrput(thread->checkstack, control_forever);
-		thread->block = thread->block->children;
-	} else if(strcmp(thread->block->opcode, "control_repeat") == 0) {
-		arrput(thread->stack, thread->block);
-		arrput(thread->checkstack, control_repeat);
-		thread->block = thread->block->children;
-	} else {
+	if(st == ba_status_next) {
 		thread->block = thread->block->next;
 	}
 

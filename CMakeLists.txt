@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(benzyna)
 
-file(GLOB LIB_SOURCE lib/*.c)
+file(GLOB LIB_SOURCE lib/*.c lib/external/*.c lib/block/*.c lib/shadow/*.c)
 file(GLOB SOURCE src/*.c)
 
 add_library(ba SHARED ${LIB_SOURCE})

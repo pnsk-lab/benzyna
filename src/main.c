@@ -1,10 +1,17 @@
 #include <ba_runtime.h>
 
+char* argv1;
+
 static unsigned char* load_file(ba_runtime_t* rt, const char* path, int* size) {
 	FILE*	       f;
 	unsigned char* d;
+	char*	       p = ba_string_concat(argv1, "/", path, NULL);
 
-	if((f = fopen(path, "rb")) == NULL) return NULL;
+	if((f = fopen(p, "rb")) == NULL) {
+		free(p);
+		return NULL;
+	}
+	free(p);
 
 	fseek(f, 0, SEEK_END);
 	*size = ftell(f);
@@ -23,8 +30,18 @@ int main(int argc, char** argv) {
 	int	     sz = 0;
 	char*	     buffer;
 	ba_runtime_t ze;
+	char*	     p;
 
-	if(argc < 2 || (f = fopen(argv[1], "r")) == NULL) return 1;
+	if(argc < 2) return 1;
+
+	argv1 = argv[1];
+
+	p = ba_string_concat(argv[1], "/project.json", NULL);
+	if((f = fopen(p, "r")) == NULL) {
+		free(p);
+		return 1;
+	}
+	free(p);
 
 	fseek(f, 0, SEEK_END);
 	sz = ftell(f);

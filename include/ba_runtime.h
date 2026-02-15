@@ -15,6 +15,10 @@
 #define BA_WIDTH 480
 #define BA_HEIGHT 360
 
+#define BA_FORMAT_MAX_DIGITS "16"
+#define BA_FORMAT_DOUBLE "%." BA_FORMAT_MAX_DIGITS "lf"
+#define BA_FORMAT_FLOAT "%." BA_FORMAT_MAX_DIGITS "f"
+
 #if defined(_BENZYNA)
 #include <cJSON.h>
 #include <miniaudio.h>
@@ -23,18 +27,16 @@
 #include <nanosvg.h>
 #include <nanosvgrast.h>
 
-#include <cairo/cairo.h>
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #endif
 
 #if defined(_BENZYNA) && defined(_WIN32)
-#define ZEDECL extern __declspec(dllexport)
+#define BADECL extern __declspec(dllexport)
 #elif defined(_WIN32)
-#define ZEDECL extern __declspec(dllimport)
+#define BADECL extern __declspec(dllimport)
 #else
-#define ZEDECL extern
+#define BADECL extern
 #endif
 
 typedef unsigned char ba_bool;
@@ -66,6 +68,12 @@ enum ba_input_type {
 	ba_input_variable,
 	ba_input_list,
 	ba_input_block
+};
+
+enum ba_status {
+	ba_status_ok = 0,
+	ba_status_declined,
+	ba_status_next
 };
 
 #if defined(_BENZYNA)
@@ -149,6 +157,8 @@ struct ba_blockkv {
 };
 
 struct ba_thread {
+	ba_runtime_t* runtime;
+
 	ba_sprite_t*	 sprite;
 	ba_block_t*	 block;
 	ba_block_t**	 stack;
@@ -186,6 +196,8 @@ struct ba_sprite {
 	double x;
 	double y;
 	double angle;
+
+	ba_stringkv_t* variables;
 };
 
 struct ba_stringkv {
@@ -199,48 +211,57 @@ struct ba_stringlistkv {
 };
 
 /* runtime.c */
-ZEDECL void ba_runtime_init(ba_runtime_t* rt);
-ZEDECL void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
-ZEDECL void ba_runtime_loop(ba_runtime_t* rt);
-ZEDECL void ba_runtime_uninit(ba_runtime_t* rt);
+BADECL void	    ba_runtime_init(ba_runtime_t* rt);
+BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
+BADECL void	    ba_runtime_loop(ba_runtime_t* rt);
+BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
+BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
 
 /* render.c */
-ZEDECL void ba_render(ba_runtime_t* rt);
+BADECL void ba_render(ba_runtime_t* rt);
 
 /* log.c */
-ZEDECL void ba_log(const char* fmt, ...);
+BADECL void ba_log(const char* fmt, ...);
 
 /* string.c */
-ZEDECL char* ba_string_dup(const char* str);
+BADECL char* ba_string_dup(const char* str);
+BADECL char* ba_string_concat(const char* str, ...);
 
 /* thread.c */
-ZEDECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
-ZEDECL void	    ba_thread_stop(ba_thread_t* thread);
-ZEDECL void	    ba_thread_exec(ba_thread_t* thread);
-ZEDECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread); /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
+BADECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
+BADECL void	    ba_thread_stop(ba_thread_t* thread);
+BADECL void	    ba_thread_exec(ba_thread_t* thread);
+BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread); /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
 
 /* texture.c */
-ZEDECL ba_texture_t* ba_texture_load(ba_costume_t* costume);
-ZEDECL void	     ba_texture_free(ba_texture_t* texture);
+BADECL ba_texture_t* ba_texture_load(ba_costume_t* costume);
+BADECL void	     ba_texture_free(ba_texture_t* texture);
 
 /* target.c */
-ZEDECL ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json);
-ZEDECL void	    ba_target_free(ba_target_t* target);
+BADECL ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json);
+BADECL void	    ba_target_free(ba_target_t* target);
 
 /* costume.c */
-ZEDECL ba_costume_t* ba_costume_parse(ba_runtime_t* rt, ba_cJSON* json);
-ZEDECL void	     ba_costume_free(ba_costume_t* costume);
+BADECL ba_costume_t* ba_costume_parse(ba_runtime_t* rt, ba_cJSON* json);
+BADECL void	     ba_costume_free(ba_costume_t* costume);
 
 /* block.c */
-ZEDECL ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json);
-ZEDECL void	   ba_block_print(ba_block_t* block);
-ZEDECL void	   ba_block_free(ba_block_t* block); /* this DOES NOT free tree */
+BADECL ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json);
+BADECL void	   ba_block_print(ba_block_t* block);
+BADECL void	   ba_block_free(ba_block_t* block); /* this DOES NOT free tree */
 
 /* sprite.c */
-ZEDECL ba_sprite_t* ba_sprite_start(ba_runtime_t* rt, ba_target_t* target, ba_bool clone);
-ZEDECL void	    ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite); /* internal */
+BADECL ba_sprite_t* ba_sprite_start(ba_runtime_t* rt, ba_target_t* target);
+BADECL void	    ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite); /* internal */
 
 /* exec.c */
-ZEDECL char* ba_exec(ba_runtime_t* rt, ba_input_t* value);
+BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
+
+/* blocks */
+BADECL int ba_block_control(ba_thread_t* thread);
+BADECL int ba_block_looks(ba_thread_t* thread);
+
+/* shadows */
+BADECL char* ba_shadow_operator(ba_thread_t* thread, const char* block);
 
 #endif
