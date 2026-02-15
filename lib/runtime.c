@@ -176,16 +176,6 @@ static unsigned char* load_file_extracted(ba_runtime_t* rt, const char* path, in
 	return d;
 }
 
-static size_t on_zip_extract(void* user, uint64_t offset, const void* buf, size_t bufsize) {
-	(void)(offset);
-	ba_runtime_t* rt = user;
-
-	memcpy(&(rt->zip_temp_buf[rt->zip_buf_cursor]), buf, bufsize);
-	rt->zip_buf_cursor += bufsize;
-
-	return bufsize;
-}
-
 static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* size) {
 	unsigned char* d = NULL;
 	int	       errnum;
@@ -197,28 +187,14 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 
 	ba_log("Accessing %s", path);
 
-	rt->zip_finished   = ba_false;
-	rt->zip_buf_cursor = 0;
-	rt->zip_buf_size   = zip_entry_size(rt->zip);
-	ba_log("size %ld", rt->zip_buf_size);
-	rt->zip_temp_buf = calloc(sizeof(unsigned char), rt->zip_buf_size);
-
-	if((errnum = zip_entry_extract(rt->zip, on_zip_extract, rt)) < 0) {
+	/* docs recommend using zip_entry_extract which is 100% possible, but it uses a callback so more stuff has to be defined. refer to commit aeda2a if we want to do that. */
+	if((errnum = zip_entry_read(rt->zip, (void**)&d, (size_t*)size)) < 0) {
 		ba_log("Error reading %s: %s", path, zip_strerror(errnum));
 		zip_entry_close(rt->zip);
 		return NULL;
 	};
 
-	while(!rt->zip_finished) {
-	}
-
-	d = malloc(rt->zip_buf_size);
-	memcpy(d, rt->zip_temp_buf, rt->zip_buf_size);
-	free(rt->zip_temp_buf);
-
 	zip_entry_close(rt->zip);
-
-	*size = rt->zip_buf_size;
 
 	return d;
 }

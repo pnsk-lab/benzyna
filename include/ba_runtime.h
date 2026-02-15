@@ -109,11 +109,6 @@ struct ba_runtime {
 		struct zip_t* zip;
 	};
 
-	char*	zip_temp_buf;
-	size_t	zip_buf_size;
-	ba_bool zip_finished;
-	size_t	zip_buf_cursor;
-
 	ba_load_file_t load_file;
 	ba_bool	       turbo;
 };
