@@ -28,7 +28,6 @@ ze_block_t* ze_block_parse(ze_runtime_t* rt, ze_cJSON* json) {
 
 		while(inputs != NULL) {
 			ze_input_t v;
-			int	   vnum;
 			cJSON*	   type = cJSON_GetArrayItem(inputs, 0);
 			cJSON*	   ent	= cJSON_GetArrayItem(inputs, 1);
 
@@ -38,38 +37,36 @@ ze_block_t* ze_block_parse(ze_runtime_t* rt, ze_cJSON* json) {
 
 				if(enttype != NULL && enttype->type == cJSON_Number) {
 					if(4 <= enttype->valuedouble && enttype->valuedouble <= 8) {
-						entval	 = cJSON_GetArrayItem(ent, 1);
-						v.number = atof(entval->valuestring);
-						vnum	 = ze_input_number;
+						entval	   = cJSON_GetArrayItem(ent, 1);
+						v.u.number = atof(entval->valuestring);
+						v.type	   = ze_input_number;
 					} else if(enttype->valuedouble == 10) {
-						entval	 = cJSON_GetArrayItem(ent, 1);
-						v.string = ze_string_dup(entval->valuestring);
-						vnum	 = ze_input_string;
+						entval	   = cJSON_GetArrayItem(ent, 1);
+						v.u.string = ze_string_dup(entval->valuestring);
+						v.type	   = ze_input_string;
 					} else if(enttype->valuedouble == 11) {
-						entval	    = cJSON_GetArrayItem(ent, 2);
-						v.broadcast = ze_string_dup(entval->valuestring);
-						vnum	    = ze_input_broadcast;
+						entval	      = cJSON_GetArrayItem(ent, 2);
+						v.u.broadcast = ze_string_dup(entval->valuestring);
+						v.type	      = ze_input_broadcast;
 					} else if(enttype->valuedouble == 12) {
-						entval	   = cJSON_GetArrayItem(ent, 2);
-						v.variable = ze_string_dup(entval->valuestring);
-						vnum	   = ze_input_variable;
+						entval	     = cJSON_GetArrayItem(ent, 2);
+						v.u.variable = ze_string_dup(entval->valuestring);
+						v.type	     = ze_input_variable;
 					} else if(enttype->valuedouble == 13) {
-						entval = cJSON_GetArrayItem(ent, 2);
-						v.list = ze_string_dup(entval->valuestring);
-						vnum   = ze_input_list;
+						entval	 = cJSON_GetArrayItem(ent, 2);
+						v.u.list = ze_string_dup(entval->valuestring);
+						v.type	 = ze_input_list;
 					}
 				}
 
-				if(entval != NULL) {
-					int ind;
+				if(entval != NULL) shput(block->inputs, inputs->string, v);
+			} else if(type != NULL && ent != NULL && type->type == cJSON_Number && ent->type == cJSON_String) {
+				ze_input_t v;
 
-					shput(block->inputs, inputs->string, v);
-					ind = shgeti(block->inputs, inputs->string);
+				v.u.block = ze_string_dup(ent->valuestring);
+				v.type	  = ze_input_block;
 
-					block->inputs[ind].type = vnum;
-				}
-			} else if(type != NULL && ent != NULL && type->type == cJSON_Number) {
-				printf("%s: %s\n", inputs->string, cJSON_Print(inputs));
+				shput(block->inputs, inputs->string, v);
 			}
 
 			inputs = inputs->next;
@@ -106,12 +103,13 @@ void ze_block_free(ze_block_t* block) {
 	int i;
 
 	for(i = 0; i < shlen(block->inputs); i++) {
-		switch(block->inputs[i].type) {
+		switch(block->inputs[i].value.type) {
 		case ze_input_string:
 		case ze_input_broadcast:
 		case ze_input_variable:
 		case ze_input_list:
-			free(block->inputs[i].value.string);
+		case ze_input_block:
+			free(block->inputs[i].value.u.string);
 			break;
 		}
 	}

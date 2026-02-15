@@ -42,15 +42,16 @@ typedef unsigned char ze_bool;
 #define ze_false ((ze_bool)0)
 #define ze_true ((ze_bool)1)
 
-typedef struct ze_runtime ze_runtime_t;
-typedef struct ze_target  ze_target_t;
-typedef struct ze_costume ze_costume_t;
-typedef struct ze_block	  ze_block_t;
-typedef struct ze_blockkv ze_blockkv_t;
-typedef struct ze_thread  ze_thread_t;
-typedef union ze_input	  ze_input_t;
-typedef struct ze_inputkv ze_inputkv_t;
-typedef struct ze_sprite  ze_sprite_t;
+typedef struct ze_runtime    ze_runtime_t;
+typedef struct ze_target     ze_target_t;
+typedef struct ze_costume    ze_costume_t;
+typedef struct ze_block	     ze_block_t;
+typedef struct ze_blockkv    ze_blockkv_t;
+typedef struct ze_thread     ze_thread_t;
+typedef union ze_input_union ze_input_union_t;
+typedef struct ze_input	     ze_input_t;
+typedef struct ze_inputkv    ze_inputkv_t;
+typedef struct ze_sprite     ze_sprite_t;
 
 typedef unsigned char* (*ze_load_file_t)(ze_runtime_t* rt, const char* path, int* size);
 typedef ze_bool (*ze_check_loop_t)(ze_thread_t* thread);
@@ -61,7 +62,8 @@ enum ze_input_type {
 	ze_input_string,
 	ze_input_broadcast,
 	ze_input_variable,
-	ze_input_list
+	ze_input_list,
+	ze_input_block
 };
 
 #if defined(_ZADRAPANIE)
@@ -152,19 +154,24 @@ struct ze_thread {
 	ze_bool stopped;
 };
 
-union ze_input {
+union ze_input_union {
 	double number;
 	char   color[8];
 	char*  string;
 	char*  broadcast;
 	char*  variable;
 	char*  list;
+	char*  block;
+};
+
+struct ze_input {
+	int		 type;
+	ze_input_union_t u;
 };
 
 struct ze_inputkv {
 	char*	   key;
 	ze_input_t value;
-	int	   type;
 };
 
 struct ze_sprite {
@@ -218,5 +225,8 @@ ZEDECL void	   ze_block_free(ze_block_t* block); /* this DOES NOT free tree */
 /* sprite.c */
 ZEDECL ze_sprite_t* ze_sprite_start(ze_runtime_t* rt, ze_target_t* target, ze_bool clone);
 ZEDECL void	    ze_sprite_kill(ze_runtime_t* rt, ze_sprite_t* sprite); /* internal */
+
+/* exec.c */
+ZEDECL char* ze_exec(ze_runtime_t* rt, ze_input_t* value);
 
 #endif
