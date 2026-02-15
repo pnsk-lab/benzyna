@@ -34,11 +34,30 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	costume->data[size] = 0;
 
 	if(strcmp(dataFormat->valuestring, "svg") == 0) {
-		if((costume->svg_image = nsvgParse(costume->data, "px", 96)) == NULL) {
+		NSVGimage*	img = nsvgParse(costume->data, "px", 128);
+		NSVGrasterizer* rast;
+		double		n = (ZE_WIDTH > ZE_HEIGHT ? ZE_WIDTH : ZE_HEIGHT) * 2;
+		double		s = 0;
+
+		if(img == NULL) {
 			ze_costume_free(costume);
 			return NULL;
 		}
-		costume->svg_raster = nsvgCreateRasterizer();
+
+		rast = nsvgCreateRasterizer();
+
+		s = (img->width < img->height) ? img->width : img->height;
+
+		costume->width	     = img->width;
+		costume->height	     = img->height;
+		costume->rgba_width  = n / s * costume->width;
+		costume->rgba_height = n / s * costume->height;
+		costume->rgba	     = malloc(4 * costume->rgba_width * costume->rgba_height);
+
+		nsvgRasterize(rast, img, 0, 0, n / s, costume->rgba, costume->rgba_width, costume->rgba_height, costume->rgba_width * 4);
+
+		nsvgDeleteRasterizer(rast);
+		nsvgDelete(img);
 
 		ze_log("%s: Vector image", md5ext->valuestring);
 	} else {
@@ -50,16 +69,20 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 			ze_costume_free(costume);
 			return NULL;
 		}
+
+		costume->rgba_width  = costume->width;
+		costume->rgba_height = costume->height;
 	}
 	free(data);
+
+	costume->texture = ze_texture_load(costume);
 
 	return costume;
 }
 
 void ze_costume_free(ze_costume_t* costume) {
+	if(costume->texture != NULL) ze_texture_free(costume->texture);
 	if(costume->rgba != NULL) free(costume->rgba);
-	if(costume->svg_raster != NULL) nsvgDeleteRasterizer(costume->svg_raster);
-	if(costume->svg_image != NULL) nsvgDelete(costume->svg_image);
 	if(costume->data != NULL) free(costume->data);
 	free(costume);
 }

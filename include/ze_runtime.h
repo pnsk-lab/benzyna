@@ -7,6 +7,9 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#define ZE_WIDTH 480
+#define ZE_HEIGHT 360
+
 #if defined(_ZADRAPANIE)
 #include <cJSON.h>
 #include <miniaudio.h>
@@ -41,15 +44,21 @@ typedef struct ze_costume ze_costume_t;
 typedef unsigned char* (*ze_load_file_t)(ze_runtime_t* rt, const char* path, int* size);
 
 #if defined(_ZADRAPANIE)
-typedef cJSON	       ze_cJSON;
-typedef NSVGimage      ze_NSVGimage;
-typedef NSVGrasterizer ze_NSVGrasterizer;
-typedef GLFWwindow     ze_GLFWwindow;
+typedef struct ze_texture ze_texture_t;
+
+typedef cJSON	   ze_cJSON;
+typedef GLFWwindow ze_GLFWwindow;
 #else
+typedef void ze_texture_t;
+
 typedef void ze_cJSON;
-typedef void ze_NSVGimage;
-typedef void ze_NSVGrasterizer;
 typedef void ze_GLFWwindow;
+#endif
+
+#if defined(_ZADRAPANIE)
+struct ze_texture {
+	GLuint id;
+};
 #endif
 
 struct ze_runtime {
@@ -71,12 +80,13 @@ struct ze_target {
 struct ze_costume {
 	unsigned char* data;
 
-	ze_NSVGimage*	   svg_image;
-	ze_NSVGrasterizer* svg_raster;
-
 	int	       width;
 	int	       height;
+	int	       rgba_width;
+	int	       rgba_height;
 	unsigned char* rgba;
+
+	ze_texture_t* texture;
 };
 
 /* runtime.c */
@@ -90,6 +100,10 @@ ZEDECL void ze_render(ze_runtime_t* rt);
 
 /* log.c */
 ZEDECL void ze_log(const char* fmt, ...);
+
+/* texture.c */
+ZEDECL ze_texture_t* ze_texture_load(ze_costume_t* costume);
+ZEDECL void	     ze_texture_free(ze_texture_t* texture);
 
 /* target.c */
 ZEDECL ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json);
