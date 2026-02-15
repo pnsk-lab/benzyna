@@ -4,12 +4,18 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	ze_costume_t*  costume = malloc(sizeof(*costume));
 	cJSON*	       md5ext;
 	cJSON*	       dataFormat;
+	cJSON*	       coord;
+	cJSON*	       res;
 	unsigned char* data;
 	int	       size;
 
 	memset(costume, 0, sizeof(*costume));
 
 	costume->json = json;
+
+	if((res = cJSON_GetObjectItem(json, "bitmapResolution")) != NULL && res->type == cJSON_Number) {
+		costume->resolution = res->valuedouble;
+	}
 
 	if((md5ext = cJSON_GetObjectItem(json, "md5ext")) == NULL || md5ext->type != cJSON_String) {
 		costume->data	    = NULL;
@@ -26,6 +32,14 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	if((dataFormat = cJSON_GetObjectItem(json, "dataFormat")) == NULL || dataFormat->type != cJSON_String) {
 		ze_costume_free(costume);
 		return NULL;
+	}
+
+	if((coord = cJSON_GetObjectItem(json, "rotationCenterX")) != NULL && coord->type == cJSON_Number) {
+		costume->center_x = coord->valuedouble;
+	}
+
+	if((coord = cJSON_GetObjectItem(json, "rotationCenterY")) != NULL && coord->type == cJSON_Number) {
+		costume->center_y = coord->valuedouble;
 	}
 
 	if(rt->load_file == NULL) {

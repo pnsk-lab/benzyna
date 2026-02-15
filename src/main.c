@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
 
 	ze_runtime_init(&ze);
 	ze.load_file = load_file;
+	ze.turbo     = ze_false;
 	ze_runtime_load_project(&ze, buffer, sz);
 	free(buffer);
 	ze_runtime_loop(&ze);

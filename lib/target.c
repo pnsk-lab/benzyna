@@ -4,6 +4,7 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	ze_target_t* target = malloc(sizeof(*target));
 	cJSON*	     costumes;
 	cJSON*	     blocks;
+	cJSON*	     isStage;
 	int	     i;
 
 	memset(target, 0, sizeof(*target));
@@ -18,6 +19,10 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	if((blocks = cJSON_GetObjectItem(json, "blocks")) == NULL || blocks->type != cJSON_Object) {
 		ze_target_free(target);
 		return NULL;
+	}
+
+	if((isStage = cJSON_GetObjectItem(json, "isStage")) != NULL && isStage->type == cJSON_True) {
+		target->stage = ze_true;
 	}
 
 	costumes = costumes->child;
