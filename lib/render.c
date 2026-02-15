@@ -1,6 +1,6 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-static void draw_sprite(ze_runtime_t* rt, ze_sprite_t* spr) {
+static void draw_sprite(ba_runtime_t* rt, ba_sprite_t* spr) {
 	double cx = spr->target->costumes[spr->costume]->center_x;
 	double cy = spr->target->costumes[spr->costume]->center_y;
 	double w  = spr->target->costumes[spr->costume]->width;
@@ -32,7 +32,7 @@ static void draw_sprite(ze_runtime_t* rt, ze_sprite_t* spr) {
 	glPopMatrix();
 }
 
-void ze_render(ze_runtime_t* rt) {
+void ba_render(ba_runtime_t* rt) {
 	int i;
 	glfwMakeContextCurrent(rt->window);
 

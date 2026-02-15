@@ -1,7 +1,7 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-ze_thread_t* ze_thread_start(ze_runtime_t* rt, ze_block_t* block) {
-	ze_thread_t* thread = malloc(sizeof(*thread));
+ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block) {
+	ba_thread_t* thread = malloc(sizeof(*thread));
 
 	memset(thread, 0, sizeof(*thread));
 
@@ -12,26 +12,26 @@ ze_thread_t* ze_thread_start(ze_runtime_t* rt, ze_block_t* block) {
 	return thread;
 }
 
-void ze_thread_stop(ze_thread_t* thread) {
+void ba_thread_stop(ba_thread_t* thread) {
 
-	thread->stopped = ze_true;
+	thread->stopped = ba_true;
 }
 
-static ze_bool control_forever(ze_thread_t* thread) {
-	return ze_true;
+static ba_bool control_forever(ba_thread_t* thread) {
+	return ba_true;
 }
 
-static ze_bool control_repeat(ze_thread_t* thread) {
-	return ze_false;
+static ba_bool control_repeat(ba_thread_t* thread) {
+	return ba_false;
 }
 
-void ze_thread_exec(ze_thread_t* thread) {
+void ba_thread_exec(ba_thread_t* thread) {
 	int n;
 
 	if(strcmp(thread->block->opcode, "looks_say") == 0) {
-		thread->vsync = ze_true;
+		thread->vsync = ba_true;
 	} else if(strcmp(thread->block->opcode, "control_wait") == 0) {
-		thread->vsync = ze_true;
+		thread->vsync = ba_true;
 	}
 
 	n = arrlen(thread->stack);
@@ -49,7 +49,7 @@ void ze_thread_exec(ze_thread_t* thread) {
 
 	if(n != arrlen(thread->stack)) {
 		n	      = arrlen(thread->stack) - 1;
-		thread->vsync = ze_true;
+		thread->vsync = ba_true;
 
 		if(!thread->checkstack[n](thread)) {
 			thread->block = thread->stack[n]->next;
@@ -62,7 +62,7 @@ void ze_thread_exec(ze_thread_t* thread) {
 recheck:;
 	if(thread->block == NULL) {
 		if(arrlen(thread->stack) == 0) {
-			thread->stopped = ze_true;
+			thread->stopped = ba_true;
 		} else {
 			n = arrlen(thread->stack) - 1;
 
@@ -80,7 +80,7 @@ recheck:;
 	}
 }
 
-void ze_thread_kill(ze_runtime_t* rt, ze_thread_t* thread) {
+void ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread) {
 	int i;
 
 	for(i = 0; i < arrlen(rt->threads); i++) {

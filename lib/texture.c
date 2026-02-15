@@ -1,7 +1,7 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-ze_texture_t* ze_texture_load(ze_costume_t* costume) {
-	ze_texture_t* texture = malloc(sizeof(*texture));
+ba_texture_t* ba_texture_load(ba_costume_t* costume) {
+	ba_texture_t* texture = malloc(sizeof(*texture));
 
 	memset(texture, 0, sizeof(*texture));
 
@@ -15,7 +15,7 @@ ze_texture_t* ze_texture_load(ze_costume_t* costume) {
 	return texture;
 }
 
-void ze_texture_free(ze_texture_t* texture) {
+void ba_texture_free(ba_texture_t* texture) {
 	glDeleteTextures(1, &texture->id);
 
 	free(texture);

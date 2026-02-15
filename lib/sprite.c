@@ -1,7 +1,7 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-ze_sprite_t* ze_sprite_start(ze_runtime_t* rt, ze_target_t* target, ze_bool clone) {
-	ze_sprite_t* sprite = malloc(sizeof(*sprite));
+ba_sprite_t* ba_sprite_start(ba_runtime_t* rt, ba_target_t* target, ba_bool clone) {
+	ba_sprite_t* sprite = malloc(sizeof(*sprite));
 
 	memset(sprite, 0, sizeof(*sprite));
 
@@ -16,7 +16,7 @@ ze_sprite_t* ze_sprite_start(ze_runtime_t* rt, ze_target_t* target, ze_bool clon
 	return sprite;
 }
 
-void ze_sprite_kill(ze_runtime_t* rt, ze_sprite_t* sprite) {
+void ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite) {
 	int i;
 
 	for(i = 0; i < arrlen(rt->sprites); i++) {

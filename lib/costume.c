@@ -1,7 +1,7 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
-	ze_costume_t*  costume = malloc(sizeof(*costume));
+ba_costume_t* ba_costume_parse(ba_runtime_t* rt, ba_cJSON* json) {
+	ba_costume_t*  costume = malloc(sizeof(*costume));
 	cJSON*	       md5ext;
 	cJSON*	       dataFormat;
 	cJSON*	       coord;
@@ -30,7 +30,7 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	}
 
 	if((dataFormat = cJSON_GetObjectItem(json, "dataFormat")) == NULL || dataFormat->type != cJSON_String) {
-		ze_costume_free(costume);
+		ba_costume_free(costume);
 		return NULL;
 	}
 
@@ -43,12 +43,12 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	}
 
 	if(rt->load_file == NULL) {
-		ze_costume_free(costume);
+		ba_costume_free(costume);
 		return NULL;
 	}
 
 	if((data = rt->load_file(rt, md5ext->valuestring, &size)) == NULL) {
-		ze_costume_free(costume);
+		ba_costume_free(costume);
 		return NULL;
 	}
 
@@ -59,11 +59,11 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	if(strcmp(dataFormat->valuestring, "svg") == 0) {
 		NSVGimage*	img = nsvgParse(costume->data, "px", 128);
 		NSVGrasterizer* rast;
-		double		n = (ZE_WIDTH > ZE_HEIGHT ? ZE_WIDTH : ZE_HEIGHT) * 2;
+		double		n = (BA_WIDTH > BA_HEIGHT ? BA_WIDTH : BA_HEIGHT) * 2;
 		double		s = 0;
 
 		if(img == NULL) {
-			ze_costume_free(costume);
+			ba_costume_free(costume);
 			return NULL;
 		}
 
@@ -82,14 +82,14 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 		nsvgDeleteRasterizer(rast);
 		nsvgDelete(img);
 
-		ze_log("%s: Vector image", md5ext->valuestring);
+		ba_log("%s: Vector image", md5ext->valuestring);
 	} else {
 		int ch;
 
-		ze_log("%s: Bitmap image", md5ext->valuestring);
+		ba_log("%s: Bitmap image", md5ext->valuestring);
 
 		if((costume->rgba = stbi_load_from_memory(costume->data, size, &costume->width, &costume->height, &ch, 4)) == NULL) {
-			ze_costume_free(costume);
+			ba_costume_free(costume);
 			return NULL;
 		}
 
@@ -99,13 +99,13 @@ ze_costume_t* ze_costume_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	free(data);
 
 skip:;
-	costume->texture = ze_texture_load(costume);
+	costume->texture = ba_texture_load(costume);
 
 	return costume;
 }
 
-void ze_costume_free(ze_costume_t* costume) {
-	if(costume->texture != NULL) ze_texture_free(costume->texture);
+void ba_costume_free(ba_costume_t* costume) {
+	if(costume->texture != NULL) ba_texture_free(costume->texture);
 	if(costume->rgba != NULL) free(costume->rgba);
 	if(costume->data != NULL) free(costume->data);
 	free(costume);

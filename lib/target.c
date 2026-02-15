@@ -1,7 +1,7 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
-	ze_target_t* target = malloc(sizeof(*target));
+ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
+	ba_target_t* target = malloc(sizeof(*target));
 	cJSON*	     variables;
 	cJSON*	     lists;
 	cJSON*	     costumes;
@@ -14,27 +14,27 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	target->json = json;
 
 	if((variables = cJSON_GetObjectItem(json, "variables")) == NULL || variables->type != cJSON_Object) {
-		ze_target_free(target);
+		ba_target_free(target);
 		return NULL;
 	}
 
 	if((lists = cJSON_GetObjectItem(json, "lists")) == NULL || lists->type != cJSON_Object) {
-		ze_target_free(target);
+		ba_target_free(target);
 		return NULL;
 	}
 
 	if((costumes = cJSON_GetObjectItem(json, "costumes")) == NULL || costumes->type != cJSON_Array) {
-		ze_target_free(target);
+		ba_target_free(target);
 		return NULL;
 	}
 
 	if((blocks = cJSON_GetObjectItem(json, "blocks")) == NULL || blocks->type != cJSON_Object) {
-		ze_target_free(target);
+		ba_target_free(target);
 		return NULL;
 	}
 
 	if((isStage = cJSON_GetObjectItem(json, "isStage")) != NULL && isStage->type == cJSON_True) {
-		target->stage = ze_true;
+		target->stage = ba_true;
 	}
 
 	sh_new_strdup(target->variables);
@@ -59,9 +59,9 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 
 	costumes = costumes->child;
 	while(costumes != NULL) {
-		ze_costume_t* c = ze_costume_parse(rt, costumes);
+		ba_costume_t* c = ba_costume_parse(rt, costumes);
 		if(c == NULL) {
-			ze_target_free(target);
+			ba_target_free(target);
 			return NULL;
 		}
 
@@ -75,10 +75,10 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 
 	blocks = blocks->child;
 	while(blocks != NULL) {
-		ze_block_t* b = ze_block_parse(rt, blocks);
+		ba_block_t* b = ba_block_parse(rt, blocks);
 
 		if(b == NULL) {
-			ze_target_free(target);
+			ba_target_free(target);
 			return NULL;
 		}
 
@@ -109,7 +109,7 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 		if(target->blocks[i].value->parent->next == target->blocks[i].value) {
 			target->blocks[i].value->parent = NULL;
 		} else if(target->blocks[i].value->parent->children == NULL) {
-			ze_block_t* v = target->blocks[i].value;
+			ba_block_t* v = target->blocks[i].value;
 
 			while(v->prev != NULL) v = v->prev;
 
@@ -118,14 +118,14 @@ ze_target_t* ze_target_parse(ze_runtime_t* rt, ze_cJSON* json) {
 	}
 
 	for(i = 0; i < arrlen(target->tree); i++) {
-		ze_block_print(target->tree[i]);
-		ze_log("");
+		ba_block_print(target->tree[i]);
+		ba_log("");
 	}
 
 	return target;
 }
 
-void ze_target_free(ze_target_t* target) {
+void ba_target_free(ba_target_t* target) {
 	int i;
 
 	arrfree(target->tree);
@@ -143,10 +143,10 @@ void ze_target_free(ze_target_t* target) {
 	}
 	shfree(target->variables);
 
-	for(i = 0; i < shlen(target->blocks); i++) ze_block_free(target->blocks[i].value);
+	for(i = 0; i < shlen(target->blocks); i++) ba_block_free(target->blocks[i].value);
 	shfree(target->blocks);
 
-	for(i = 0; i < arrlen(target->costumes); i++) ze_costume_free(target->costumes[i]);
+	for(i = 0; i < arrlen(target->costumes); i++) ba_costume_free(target->costumes[i]);
 	arrfree(target->costumes);
 
 	free(target);

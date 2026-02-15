@@ -1,6 +1,6 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-void ze_log(const char* fmt, ...) {
+void ba_log(const char* fmt, ...) {
 	va_list va;
 
 	fprintf(stderr, "[ZE] ");

@@ -1,6 +1,6 @@
-#include <ze_runtime.h>
+#include <ba_runtime.h>
 
-static unsigned char* load_file(ze_runtime_t* rt, const char* path, int* size) {
+static unsigned char* load_file(ba_runtime_t* rt, const char* path, int* size) {
 	FILE*	       f;
 	unsigned char* d;
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	FILE*	     f;
 	int	     sz = 0;
 	char*	     buffer;
-	ze_runtime_t ze;
+	ba_runtime_t ze;
 
 	if(argc < 2 || (f = fopen(argv[1], "r")) == NULL) return 1;
 
@@ -35,11 +35,11 @@ int main(int argc, char** argv) {
 
 	fclose(f);
 
-	ze_runtime_init(&ze);
+	ba_runtime_init(&ze);
 	ze.load_file = load_file;
-	ze.turbo     = ze_false;
-	ze_runtime_load_project(&ze, buffer, sz);
+	ze.turbo     = ba_false;
+	ba_runtime_load_project(&ze, buffer, sz);
 	free(buffer);
-	ze_runtime_loop(&ze);
-	ze_runtime_uninit(&ze);
+	ba_runtime_loop(&ze);
+	ba_runtime_uninit(&ze);
 }

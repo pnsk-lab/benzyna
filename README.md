@@ -1,3 +1,3 @@
-# Zadrapanie
+# Benzyna
 
 Scratch runtime in C
