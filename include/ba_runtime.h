@@ -101,6 +101,10 @@ struct ba_runtime_param {
 	ba_make_current_t  make_current;
 	ba_swap_buffer_t   swap_buffer;
 	ba_bool		   turbo;
+	union {
+		const char*   root_path;
+		struct zip_t* zip;
+	};
 };
 
 struct ba_runtime {
@@ -224,6 +228,7 @@ BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int 
 BADECL void	    ba_runtime_step(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
+BADECL int	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);
