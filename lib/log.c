@@ -3,7 +3,7 @@
 void ba_log(const char* fmt, ...) {
 	va_list va;
 
-	fprintf(stderr, "[BA] ");
+	fprintf(stderr, "[Benzyna] ");
 	va_start(va, fmt);
 	vfprintf(stderr, fmt, va);
 	va_end(va);
