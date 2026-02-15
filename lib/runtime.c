@@ -1,5 +1,10 @@
 #include <ba_runtime.h>
 
+#include <errno.h>
+#include <unistd.h>
+#include <zip.h>
+#include <sys/stat.h>
+
 static ba_bool first = ba_true;
 
 void ba_runtime_init(ba_runtime_t* rt) {
@@ -144,4 +149,182 @@ ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt) {
 	}
 
 	return NULL;
+}
+
+static unsigned char* load_file_extracted(ba_runtime_t* rt, const char* path, int* size) {
+	FILE*	       f;
+	unsigned char* d;
+	char*	       p = ba_string_concat(rt->root_path, "/", path, NULL);
+
+	ba_log("Loading %s", p);
+
+	if((f = fopen(p, "rb")) == NULL) {
+		free(p);
+		return NULL;
+	}
+	free(p);
+
+	fseek(f, 0, SEEK_END);
+	*size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	d = malloc(*size);
+	fread(d, 1, *size, f);
+
+	fclose(f);
+
+	return d;
+}
+
+static size_t on_zip_extract(void* user, uint64_t offset, const void* buf, size_t bufsize) {
+	(void)(offset);
+	ba_runtime_t* rt = user;
+
+	memcpy(&(rt->zip_temp_buf[rt->zip_buf_cursor]), buf, bufsize);
+	rt->zip_buf_cursor += bufsize;
+
+	return bufsize;
+}
+
+static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* size) {
+	unsigned char* d = NULL;
+	int	       errnum;
+
+	if((errnum = zip_entry_open(rt->zip, path)) != 0) {
+		ba_log("Error accessing %s: %s", path, zip_strerror(errnum));
+		return NULL;
+	}
+
+	ba_log("Accessing %s", path);
+
+	rt->zip_finished   = ba_false;
+	rt->zip_buf_cursor = 0;
+	rt->zip_buf_size   = zip_entry_size(rt->zip);
+	ba_log("size %ld", rt->zip_buf_size);
+	rt->zip_temp_buf = calloc(sizeof(unsigned char), rt->zip_buf_size);
+
+	if((errnum = zip_entry_extract(rt->zip, on_zip_extract, rt)) < 0) {
+		ba_log("Error reading %s: %s", path, zip_strerror(errnum));
+		zip_entry_close(rt->zip);
+		return NULL;
+	};
+
+	while(!rt->zip_finished) {
+	}
+
+	d = malloc(rt->zip_buf_size);
+	memcpy(d, rt->zip_temp_buf, rt->zip_buf_size);
+	free(rt->zip_temp_buf);
+
+	zip_entry_close(rt->zip);
+
+	*size = rt->zip_buf_size;
+
+	return d;
+}
+
+int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
+	FILE*	    f;
+	size_t	    sz = 0;
+	char*	    buffer;
+	struct stat s;
+
+	stat(path, &s);
+
+	if(access(path, F_OK) != 0) {
+		ba_log("Failed to open %s: No such file or directory", path);
+		return 1;
+	}
+
+	/* is path a directory? */
+	if(S_ISREG(s.st_mode) == 0) {
+		char* p;
+
+		ba_log("Loading directory %s", path);
+
+		p = ba_string_concat(path, "/project.json", NULL);
+		if((f = fopen(p, "r")) == NULL) {
+			ba_log("Failed to open %s: %s", path, strerror(errno));
+			free(p);
+			return 1;
+		}
+		free(p);
+
+		fseek(f, 0, SEEK_END);
+		sz = ftell(f);
+		fseek(f, 0, SEEK_SET);
+
+		buffer = malloc(sz);
+		fread(buffer, 1, sz, f);
+
+		fclose(f);
+
+		rt->root_path = path;
+		rt->load_file = load_file_extracted;
+
+		rt->turbo = ba_false;
+		ba_runtime_load_project(rt, buffer, sz);
+		free(buffer);
+	} else {
+		char	fileinfo[15];
+		ba_bool is_valid	  = ba_false;
+		int	compression_level = 0;
+		int	errnum		  = 0;
+
+		if((f = fopen(path, "r")) == NULL) {
+			ba_log("Failed to open file %s: %s", f, strerror(errno));
+			return 1;
+		}
+		fread(fileinfo, 1, 15, f);
+		fclose(f);
+
+		/*
+		 * Check if the file a valid zip file.
+		 * (This is slightly overkill yes but who knows what people will try and I like having nice errors)
+		 */
+		if(fileinfo[0] == 0x50) {
+			if(fileinfo[1] == 0x4b) {
+				if(fileinfo[2] == 0x03) {
+					if(fileinfo[3] == 0x04) {
+						is_valid = ba_true;
+					}
+				}
+			}
+		}
+
+		if(!is_valid) {
+			ba_log("%s is not a valid .sb3 file. Please note that currently only .sb3 and extracted folders are supported.", f);
+			return 1;
+		}
+
+		ba_log("Loading file %s", path);
+
+		compression_level = (fileinfo[9] << 8) + fileinfo[8];
+
+		ba_log("Compression level %d", compression_level);
+
+		rt->zip = zip_openwitherror(path, compression_level, 'r', &errnum);
+		if(errnum != 0) {
+			ba_log("Error opening %s: %s", f, zip_strerror(errnum));
+			return 1;
+		}
+
+		if((errnum = zip_entry_open(rt->zip, "project.json")) != 0) {
+			ba_log("Error accessing %s/project.json: %s", f, zip_strerror(errnum));
+			return 1;
+		}
+
+		sz = zip_entry_size(rt->zip);
+
+		zip_entry_read(rt->zip, (void**)&buffer, &sz);
+		zip_entry_close(rt->zip);
+
+		rt->load_file = load_file_zipped;
+
+		rt->turbo = ba_false;
+		ba_runtime_load_project(rt, buffer, sz);
+		free(buffer);
+	}
+
+	return 0;
 }

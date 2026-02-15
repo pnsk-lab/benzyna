@@ -102,7 +102,18 @@ struct ba_runtime {
 	ba_thread_t** threads;
 	ba_sprite_t** sprites;
 
-	void*	       user;
+	void* user;
+
+	union {
+		const char*   root_path;
+		struct zip_t* zip;
+	};
+
+	char*	zip_temp_buf;
+	size_t	zip_buf_size;
+	ba_bool zip_finished;
+	size_t	zip_buf_cursor;
+
 	ba_load_file_t load_file;
 	ba_bool	       turbo;
 };
@@ -216,6 +227,7 @@ BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int 
 BADECL void	    ba_runtime_loop(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
+BADECL int	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);
