@@ -3,17 +3,13 @@
 static ba_bool first = ba_true;
 
 void ba_runtime_init(ba_runtime_t* rt) {
-	double scale = 2;
+	ba_runtime_param_t param = rt->param;
 
 	memset(rt, 0, sizeof(*rt));
 
-	if(first) {
-		glfwInit();
-	}
+	rt->param = param;
 
-	rt->window = glfwCreateWindow(BA_WIDTH * scale, BA_HEIGHT * scale, "Benzyna Scratch Runtime", NULL, NULL);
-
-	glfwMakeContextCurrent(rt->window);
+	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
 	if(first) {
 		gladLoadGL();
@@ -21,14 +17,13 @@ void ba_runtime_init(ba_runtime_t* rt) {
 		first = ba_false;
 	}
 
-	glfwSwapInterval(rt->turbo ? 0 : 1);
+	if(rt->param.swap_interval != NULL) rt->param.swap_interval(rt, rt->param.turbo ? 0 : 1);
 
 	glEnable(GL_BLEND);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glViewport(0, 0, BA_WIDTH * scale, BA_HEIGHT * scale);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-BA_WIDTH / 2, BA_WIDTH / 2, -BA_HEIGHT / 2, BA_HEIGHT / 2, -1, 1);
@@ -90,33 +85,29 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 	}
 }
 
-void ba_runtime_loop(ba_runtime_t* rt) {
-	while(!glfwWindowShouldClose(rt->window)) {
-		int	i;
-		ba_bool loop;
+void ba_runtime_step(ba_runtime_t* rt) {
+	int	i;
+	ba_bool loop;
 
-		do {
-			loop = ba_false;
-			for(i = 0; i < arrlen(rt->threads); i++) {
-				if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
-				loop = ba_true;
-
-				ba_thread_exec(rt->threads[i]);
-			}
-		} while(loop);
-
+	do {
+		loop = ba_false;
 		for(i = 0; i < arrlen(rt->threads); i++) {
-			rt->threads[i]->vsync = ba_false;
-			if(rt->threads[i]->stopped) {
-				ba_thread_kill(rt, rt->threads[i]);
-				i--;
-			}
+			if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
+			loop = ba_true;
+
+			ba_thread_exec(rt->threads[i]);
 		}
+	} while(loop);
 
-		ba_render(rt);
-
-		glfwPollEvents();
+	for(i = 0; i < arrlen(rt->threads); i++) {
+		rt->threads[i]->vsync = ba_false;
+		if(rt->threads[i]->stopped) {
+			ba_thread_kill(rt, rt->threads[i]);
+			i--;
+		}
 	}
+
+	ba_render(rt);
 }
 
 void ba_runtime_uninit(ba_runtime_t* rt) {

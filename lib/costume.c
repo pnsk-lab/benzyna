@@ -42,12 +42,12 @@ ba_costume_t* ba_costume_parse(ba_runtime_t* rt, ba_cJSON* json) {
 		costume->center_y = coord->valuedouble;
 	}
 
-	if(rt->load_file == NULL) {
+	if(rt->param.load_file == NULL) {
 		ba_costume_free(costume);
 		return NULL;
 	}
 
-	if((data = rt->load_file(rt, md5ext->valuestring, &size)) == NULL) {
+	if((data = rt->param.load_file(rt, md5ext->valuestring, &size)) == NULL) {
 		ba_costume_free(costume);
 		return NULL;
 	}

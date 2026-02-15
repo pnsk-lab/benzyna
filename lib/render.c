@@ -34,7 +34,7 @@ static void draw_sprite(ba_runtime_t* rt, ba_sprite_t* spr) {
 
 void ba_render(ba_runtime_t* rt) {
 	int i;
-	glfwMakeContextCurrent(rt->window);
+	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -48,5 +48,5 @@ void ba_render(ba_runtime_t* rt) {
 	}
 	glDisable(GL_TEXTURE_2D);
 
-	glfwSwapBuffers(rt->window);
+	if(rt->param.swap_buffer != NULL) rt->param.swap_buffer(rt);
 }

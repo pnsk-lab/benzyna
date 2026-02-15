@@ -1,8 +1,11 @@
 #include <ba_runtime.h>
 
-char* argv1;
+#include <GLFW/glfw3.h>
 
-static unsigned char* load_file(ba_runtime_t* rt, const char* path, int* size) {
+static char*	   argv1;
+static GLFWwindow* window;
+
+static unsigned char* load_file(ba_runtime_t* rt, const char* path, int* siba) {
 	FILE*	       f;
 	unsigned char* d;
 	char*	       p = ba_string_concat(argv1, "/", path, NULL);
@@ -14,22 +17,34 @@ static unsigned char* load_file(ba_runtime_t* rt, const char* path, int* size) {
 	free(p);
 
 	fseek(f, 0, SEEK_END);
-	*size = ftell(f);
+	*siba = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
-	d = malloc(*size);
-	fread(d, 1, *size, f);
+	d = malloc(*siba);
+	fread(d, 1, *siba, f);
 
 	fclose(f);
 
 	return d;
 }
 
+static void make_current(ba_runtime_t* rt) {
+	glfwMakeContextCurrent(window);
+}
+
+static void swap_buffer(ba_runtime_t* rt) {
+	glfwSwapBuffers(window);
+}
+
+static void swap_interval(ba_runtime_t* rt, int interval) {
+	glfwSwapInterval(interval);
+}
+
 int main(int argc, char** argv) {
 	FILE*	     f;
 	int	     sz = 0;
 	char*	     buffer;
-	ba_runtime_t ze;
+	ba_runtime_t ba;
 	char*	     p;
 
 	if(argc < 2) return 1;
@@ -52,11 +67,22 @@ int main(int argc, char** argv) {
 
 	fclose(f);
 
-	ba_runtime_init(&ze);
-	ze.load_file = load_file;
-	ze.turbo     = ba_false;
-	ba_runtime_load_project(&ze, buffer, sz);
+	glfwInit();
+
+	window = glfwCreateWindow(BA_WIDTH * 2, BA_HEIGHT * 2, "Benzyna Scratch Runtime", NULL, NULL);
+
+	ba.param.load_file     = load_file;
+	ba.param.make_current  = make_current;
+	ba.param.swap_buffer   = swap_buffer;
+	ba.param.swap_interval = swap_interval;
+	ba.param.turbo	       = ba_false;
+	ba_runtime_init(&ba);
+	ba_runtime_load_project(&ba, buffer, sz);
 	free(buffer);
-	ba_runtime_loop(&ze);
-	ba_runtime_uninit(&ze);
+	while(1) {
+		ba_runtime_step(&ba);
+	}
+	ba_runtime_uninit(&ba);
+
+	glfwDestroyWindow(window);
 }
