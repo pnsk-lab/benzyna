@@ -258,8 +258,9 @@ BADECL void	    ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite); /* intern
 BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
 
 /* blocks */
-BADECL int ba_block_control(ba_thread_t* thread);
+BADECL int ba_block_motion(ba_thread_t* thread);
 BADECL int ba_block_looks(ba_thread_t* thread);
+BADECL int ba_block_control(ba_thread_t* thread);
 
 /* shadows */
 BADECL char* ba_shadow_operator(ba_thread_t* thread, const char* block);

@@ -31,8 +31,9 @@ void ba_thread_exec(ba_thread_t* thread) {
 	int n;
 
 	n = arrlen(thread->stack);
-	if((st = ba_block_control(thread)) != ba_status_declined) {
+	if((st = ba_block_motion(thread)) != ba_status_declined) {
 	} else if((st = ba_block_looks(thread)) != ba_status_declined) {
+	} else if((st = ba_block_control(thread)) != ba_status_declined) {
 	} else {
 		st = ba_status_next;
 	}

@@ -28,9 +28,9 @@ char* ba_shadow_operator(ba_thread_t* thread, const char* block) {
 		}
 
 		if(numr != NULL) free(numr);
-	} else if(strcmp(b->opcode, "operator_add") == 0 || strcmp(b->opcode, "operator_subtract") == 0 || strcmp(b->opcode, "operator_multiply") == 0 || strcmp(b->opcode, "operator_divide") == 0 || strcmp(b->opcode, "operator_mod") == 0) {
-		const char* num1s = "NUM1";
-		const char* num2s = "NUM2";
+	} else if(strcmp(b->opcode, "operator_add") == 0 || strcmp(b->opcode, "operator_subtract") == 0 || strcmp(b->opcode, "operator_multiply") == 0 || strcmp(b->opcode, "operator_divide") == 0 || strcmp(b->opcode, "operator_mod") == 0 || strcmp(b->opcode, "operator_random") == 0) {
+		const char* num1s = (strcmp(b->opcode, "operator_random") == 0) ? "FROM" : "NUM1";
+		const char* num2s = (strcmp(b->opcode, "operator_random") == 0) ? "TO" : "NUM2";
 		int	    num1i = shgeti(b->inputs, num1s);
 		int	    num2i = shgeti(b->inputs, num2s);
 		char*	    num1r;
@@ -56,6 +56,8 @@ char* ba_shadow_operator(ba_thread_t* thread, const char* block) {
 				n = num1 / num2;
 			} else if(strcmp(b->opcode, "operator_mod") == 0) {
 				n = num1 - num2 * (int)(num1 / num2);
+			} else if(strcmp(b->opcode, "operator_random") == 0) {
+				n = (rand() % (int)(num2 - num1)) + num1;
 			}
 
 			str = malloc(64);

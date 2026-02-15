@@ -17,6 +17,5 @@ endif()
 target_compile_definitions(ba PRIVATE _BENZYNA)
 target_link_libraries(ba PRIVATE glfw)
 
-
 add_executable(ba_runtime ${SOURCE})
 target_link_libraries(ba_runtime PRIVATE ba)
