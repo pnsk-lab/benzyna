@@ -42,16 +42,18 @@ typedef unsigned char ze_bool;
 #define ze_false ((ze_bool)0)
 #define ze_true ((ze_bool)1)
 
-typedef struct ze_runtime    ze_runtime_t;
-typedef struct ze_target     ze_target_t;
-typedef struct ze_costume    ze_costume_t;
-typedef struct ze_block	     ze_block_t;
-typedef struct ze_blockkv    ze_blockkv_t;
-typedef struct ze_thread     ze_thread_t;
-typedef union ze_input_union ze_input_union_t;
-typedef struct ze_input	     ze_input_t;
-typedef struct ze_inputkv    ze_inputkv_t;
-typedef struct ze_sprite     ze_sprite_t;
+typedef struct ze_runtime      ze_runtime_t;
+typedef struct ze_target       ze_target_t;
+typedef struct ze_costume      ze_costume_t;
+typedef struct ze_block	       ze_block_t;
+typedef struct ze_blockkv      ze_blockkv_t;
+typedef struct ze_thread       ze_thread_t;
+typedef union ze_input_union   ze_input_union_t;
+typedef struct ze_input	       ze_input_t;
+typedef struct ze_inputkv      ze_inputkv_t;
+typedef struct ze_sprite       ze_sprite_t;
+typedef struct ze_stringkv     ze_stringkv_t;
+typedef struct ze_stringlistkv ze_stringlistkv_t;
 
 typedef unsigned char* (*ze_load_file_t)(ze_runtime_t* rt, const char* path, int* size);
 typedef ze_bool (*ze_check_loop_t)(ze_thread_t* thread);
@@ -102,9 +104,11 @@ struct ze_target {
 
 	ze_bool stage;
 
-	ze_costume_t** costumes;
-	ze_blockkv_t*  blocks;
-	ze_block_t**   tree;
+	ze_costume_t**	   costumes;
+	ze_stringkv_t*	   variables;
+	ze_stringlistkv_t* lists;
+	ze_blockkv_t*	   blocks;
+	ze_block_t**	   tree;
 };
 
 struct ze_costume {
@@ -182,6 +186,16 @@ struct ze_sprite {
 	double x;
 	double y;
 	double angle;
+};
+
+struct ze_stringkv {
+	char* key;
+	char* value;
+};
+
+struct ze_stringlistkv {
+	char*  key;
+	char** value;
 };
 
 /* runtime.c */

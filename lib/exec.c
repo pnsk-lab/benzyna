@@ -16,6 +16,9 @@ char* ze_exec(ze_runtime_t* rt, ze_input_t* value) {
 		b = malloc(strlen(value->u.string) + 1);
 		strcpy(b, value->u.string);
 		break;
+	case ze_input_variable:
+		printf("!\n");
+		break;
 	}
 
 	return b;
