@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-static char*	   argv1;
+static char*	   argv1 = NULL;
 static GLFWwindow* window;
 
 static void make_current(ba_runtime_t* rt) {
@@ -19,8 +19,19 @@ static void swap_interval(ba_runtime_t* rt, int interval) {
 
 int main(int argc, char** argv) {
 	ba_runtime_t ba;
+	int	     i;
 
-	if(argc < 2) return 1;
+	ba.param.turbo = ba_false;
+
+	for(i = 1; i < argc; i++) {
+		if(strcmp(argv[i], "--turbo") == 0) {
+			ba.param.turbo = ba_true;
+		} else {
+			argv1 = argv[i];
+		}
+	}
+
+	if(argv1 == NULL) return 1;
 
 	glfwInit();
 
@@ -29,7 +40,6 @@ int main(int argc, char** argv) {
 	ba.param.make_current  = make_current;
 	ba.param.swap_buffer   = swap_buffer;
 	ba.param.swap_interval = swap_interval;
-	ba.param.turbo	       = ba_true;
 	ba_runtime_init(&ba);
 
 	if(ba_runtime_load_path(&ba, argv[1]) != 0) {
