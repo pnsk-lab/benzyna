@@ -19,6 +19,8 @@ void ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_looks(rt);
 	ba_block_control(rt);
 
+	ba_shadow_operator(rt);
+
 	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
 	if(first) {

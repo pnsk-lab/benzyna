@@ -1,16 +1,11 @@
 #include <ba_runtime.h>
 
 static int looks_say(ba_thread_t* thread) {
-	const char* s	= "MESSAGE";
-	int	    ind = shgeti(thread->block->inputs, s);
+	char* str;
 
-	if(ind != -1) {
-		char* str;
-
-		if((str = ba_exec(thread, &thread->block->inputs[ind].value)) != NULL) {
-			ba_log("Says: %s", str);
-			free(str);
-		}
+	if((str = ba_thread_input(thread, "MESSAGE")) != NULL) {
+		ba_log("Says: %s", str);
+		free(str);
 	}
 
 	return ba_status_next;

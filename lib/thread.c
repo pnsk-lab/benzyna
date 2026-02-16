@@ -88,3 +88,15 @@ void ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread) {
 	arrfree(thread->stack);
 	free(thread);
 }
+
+char* ba_thread_input(ba_thread_t* thread, const char* input) {
+	return ba_thread_input2(thread, thread->block, input);
+}
+
+char* ba_thread_input2(ba_thread_t* thread, ba_block_t* block, const char* input) {
+	int ind = shgeti(block->inputs, input);
+
+	if(ind == -1) return NULL;
+
+	return ba_exec(thread, &block->inputs[ind].value);
+}

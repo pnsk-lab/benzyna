@@ -70,7 +70,7 @@ typedef void (*ba_make_current_t)(ba_runtime_t* rt);
 typedef void (*ba_swap_interval_t)(ba_runtime_t* rt, int interval);
 typedef ba_bool (*ba_check_loop_t)(ba_thread_t* thread);
 typedef int (*ba_block_handler_t)(ba_thread_t* thread);
-typedef char* (*ba_shadow_handler_t)(ba_thread_t* thread);
+typedef char* (*ba_shadow_handler_t)(ba_thread_t* thread, ba_block_t* block);
 
 enum ba_input_type {
 	ba_input_number = 0, /* treat 4/5/6/7/8 as same thing */
@@ -267,7 +267,9 @@ BADECL char* ba_string_concat(const char* str, ...);
 BADECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
 BADECL void	    ba_thread_stop(ba_thread_t* thread);
 BADECL void	    ba_thread_exec(ba_thread_t* thread);
-BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread); /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
+BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread);   /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
+BADECL char*	    ba_thread_input(ba_thread_t* thread, const char* input); /* this gets input from current block ; useful for blocks */
+BADECL char*	    ba_thread_input2(ba_thread_t* thread, ba_block_t* block, const char* input);
 
 /* texture.c */
 BADECL ba_texture_t* ba_texture_load(ba_costume_t* costume);
@@ -299,6 +301,6 @@ BADECL void ba_block_looks(ba_runtime_t* rt);
 BADECL void ba_block_control(ba_runtime_t* rt);
 
 /* shadows */
-BADECL char* ba_shadow_operator(ba_thread_t* thread, const char* block);
+BADECL void ba_shadow_operator(ba_runtime_t* rt);
 
 #endif

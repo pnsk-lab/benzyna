@@ -1,9 +1,11 @@
 #include <ba_runtime.h>
 
 char* ba_exec(ba_thread_t* thread, ba_input_t* value) {
-	char*	     b = NULL;
-	int	     ind;
-	ba_sprite_t* spr = ba_runtime_get_stage_sprite(thread->runtime);
+	char*		    b = NULL;
+	int		    ind;
+	ba_sprite_t*	    spr = ba_runtime_get_stage_sprite(thread->runtime);
+	ba_shadow_handler_t handler;
+	ba_block_t*	    block;
 
 	switch(value->type) {
 	case ba_input_number:
@@ -28,7 +30,8 @@ char* ba_exec(ba_thread_t* thread, ba_input_t* value) {
 		}
 		break;
 	case ba_input_block:
-		if((b = ba_shadow_operator(thread, value->u.block)) != NULL) {
+		if((block = shget(thread->sprite->target->blocks, value->u.block)) != NULL && (handler = shget(thread->runtime->shadow_handlers, block->opcode)) != NULL) {
+			b = handler(thread, block);
 		}
 		break;
 	}

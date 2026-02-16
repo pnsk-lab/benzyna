@@ -1,72 +1,69 @@
 #include <ba_runtime.h>
 
-char* ba_shadow_operator(ba_thread_t* thread, const char* block) {
-	ba_block_t* b	= shget(thread->sprite->target->blocks, block);
-	char*	    str = NULL;
-
-	if(b == NULL) return NULL;
-
-	if(strcmp(b->opcode, "operator_round") == 0) {
-		const char* nums = "NUM";
-		int	    numi = shgeti(b->inputs, nums);
-		char*	    numr;
-
-		if(numi == -1) return NULL;
-
-		numr = ba_exec(thread, &b->inputs[numi].value);
-
-		if(numr) {
-			double num = atof(numr);
-			double n   = 0;
-
-			if(strcmp(b->opcode, "operator_round") == 0) {
-				n = round(num);
-			}
-
-			str = malloc(64);
-			sprintf(str, BA_FORMAT_DOUBLE, n);
-		}
-
-		if(numr != NULL) free(numr);
-	} else if(strcmp(b->opcode, "operator_add") == 0 || strcmp(b->opcode, "operator_subtract") == 0 || strcmp(b->opcode, "operator_multiply") == 0 || strcmp(b->opcode, "operator_divide") == 0 || strcmp(b->opcode, "operator_mod") == 0 || strcmp(b->opcode, "operator_random") == 0) {
-		const char* num1s = (strcmp(b->opcode, "operator_random") == 0) ? "FROM" : "NUM1";
-		const char* num2s = (strcmp(b->opcode, "operator_random") == 0) ? "TO" : "NUM2";
-		int	    num1i = shgeti(b->inputs, num1s);
-		int	    num2i = shgeti(b->inputs, num2s);
-		char*	    num1r;
-		char*	    num2r;
-
-		if(num1i == -1 || num2i == -1) return NULL;
-
-		num1r = ba_exec(thread, &b->inputs[num1i].value);
-		num2r = ba_exec(thread, &b->inputs[num2i].value);
-
-		if(num1r != NULL && num2r != NULL) {
-			double num1 = atof(num1r);
-			double num2 = atof(num2r);
-			double n    = 0;
-
-			if(strcmp(b->opcode, "operator_add") == 0) {
-				n = num1 + num2;
-			} else if(strcmp(b->opcode, "operator_subtract") == 0) {
-				n = num1 - num2;
-			} else if(strcmp(b->opcode, "operator_multiply") == 0) {
-				n = num1 * num2;
-			} else if(strcmp(b->opcode, "operator_divide") == 0) {
-				n = num1 / num2;
-			} else if(strcmp(b->opcode, "operator_mod") == 0) {
-				n = num1 - num2 * (int)(num1 / num2);
-			} else if(strcmp(b->opcode, "operator_random") == 0) {
-				n = (rand() % (int)(num2 - num1)) + num1;
-			}
-
-			str = malloc(64);
-			sprintf(str, BA_FORMAT_DOUBLE, n);
-		}
-
-		if(num1r != NULL) free(num1r);
-		if(num2r != NULL) free(num2r);
+#define OP2(name, op) \
+	static char* operator_##name(ba_thread_t* thread, ba_block_t* block) { \
+		char* str1 = NULL; \
+		char* str2 = NULL; \
+		char* b	   = NULL; \
+\
+		if((str1 = ba_thread_input2(thread, block, "NUM1")) != NULL && (str2 = ba_thread_input2(thread, block, "NUM2")) != NULL) { \
+			double n1 = atof(str1); \
+			double n2 = atof(str2); \
+\
+			b = malloc(64); \
+			sprintf(b, BA_FORMAT_DOUBLE, n1 op n2); \
+		} \
+\
+		if(str1 != NULL) free(str1); \
+		if(str2 != NULL) free(str2); \
+\
+		return b; \
 	}
 
-	return str;
+static char* operator_round(ba_thread_t* thread, ba_block_t* block) {
+	char* str;
+	char* b = NULL;
+
+	if((str = ba_thread_input2(thread, block, "NUM")) != NULL) {
+		b = malloc(64);
+		sprintf(b, BA_FORMAT_DOUBLE, round(atof(str)));
+		free(str);
+	}
+
+	return b;
+}
+
+OP2(add, +);
+OP2(subtract, -);
+OP2(multiply, *);
+OP2(divide, /);
+
+static char* operator_random(ba_thread_t* thread, ba_block_t* block) {
+	char* str1 = NULL;
+	char* str2 = NULL;
+	char* b	   = NULL;
+
+	if((str1 = ba_thread_input2(thread, block, "FROM")) != NULL && (str2 = ba_thread_input2(thread, block, "TO")) != NULL) {
+		double n1   = atof(str1);
+		double n2   = atof(str2);
+		double low  = (n1 <= n2) ? n1 : n2;
+		double high = (n1 <= n2) ? n2 : n1;
+		double r    = (double)rand() / RAND_MAX;
+
+		b = malloc(64);
+		sprintf(b, BA_FORMAT_DOUBLE, low + (high - low) * r);
+	}
+
+	if(str1 != NULL) free(str1);
+	if(str2 != NULL) free(str2);
+
+	return b;
+}
+void ba_shadow_operator(ba_runtime_t* rt) {
+	ba_runtime_shadow_handler(rt, "operator_round", operator_round);
+	ba_runtime_shadow_handler(rt, "operator_add", operator_add);
+	ba_runtime_shadow_handler(rt, "operator_subtract", operator_subtract);
+	ba_runtime_shadow_handler(rt, "operator_multiply", operator_multiply);
+	ba_runtime_shadow_handler(rt, "operator_divide", operator_divide);
+	ba_runtime_shadow_handler(rt, "operator_random", operator_random);
 }
