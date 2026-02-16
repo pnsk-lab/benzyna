@@ -51,10 +51,6 @@ static int control_repeat(ba_thread_t* thread) {
 	return ba_status_stay;
 }
 
-static ba_bool control_if_else_check(ba_thread_t* thread) {
-	return ba_false;
-}
-
 static int control_if_else(ba_thread_t* thread) {
 	ba_input_t* substack = NULL;
 	ba_block_t* block;
@@ -72,7 +68,28 @@ static int control_if_else(ba_thread_t* thread) {
 
 	arrput(thread->loopstack, NULL);
 	arrput(thread->escstack, thread->block->next);
-	arrput(thread->checkstack, control_if_else_check);
+	arrput(thread->checkstack, NULL);
+	arrput(thread->argstack, NULL);
+	thread->block = block;
+
+	return ba_status_stay;
+}
+
+static int control_if(ba_thread_t* thread) {
+	ba_block_t* block = NULL;
+	char*	    str	  = NULL;
+
+	if((str = ba_thread_input(thread, "CONDITION")) != NULL && ba_string_is_false(str)) {
+		block = thread->block->children;
+	}
+
+	if(str != NULL) free(str);
+
+	if(block == NULL) return ba_status_next;
+
+	arrput(thread->loopstack, NULL);
+	arrput(thread->escstack, thread->block->next);
+	arrput(thread->checkstack, NULL);
 	arrput(thread->argstack, NULL);
 	thread->block = block;
 
@@ -84,4 +101,5 @@ void ba_block_control(ba_runtime_t* rt) {
 	ba_runtime_block_handler(rt, "control_forever", control_forever);
 	ba_runtime_block_handler(rt, "control_repeat", control_repeat);
 	ba_runtime_block_handler(rt, "control_if_else", control_if_else);
+	ba_runtime_block_handler(rt, "control_if", control_if);
 }

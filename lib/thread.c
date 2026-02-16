@@ -46,7 +46,7 @@ recheck:;
 		} else {
 			int n = arrlen(thread->loopstack) - 1;
 
-			if(thread->checkstack[n](thread)) {
+			if(thread->checkstack[n] != NULL && thread->checkstack[n](thread)) {
 				thread->block = thread->loopstack[n];
 			} else {
 				thread->block = thread->escstack[n];

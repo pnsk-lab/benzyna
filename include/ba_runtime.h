@@ -187,7 +187,7 @@ struct ba_thread {
 	ba_block_t*	 block;
 	ba_block_t**	 loopstack;
 	ba_block_t**	 escstack;
-	ba_check_loop_t* checkstack; /* if function returns true, go loop */
+	ba_check_loop_t* checkstack; /* if function is non NULL and returns true, go loop */
 	void**		 argstack;
 
 	ba_bool vsync;
