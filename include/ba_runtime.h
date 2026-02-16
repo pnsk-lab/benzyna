@@ -7,6 +7,11 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <math.h>
+#include <errno.h>
+#include <sys/stat.h>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -26,7 +31,7 @@
 #include <stb_image.h>
 #include <nanosvg.h>
 #include <nanosvgrast.h>
-
+#include <zip.h>
 #include <glad/glad.h>
 #endif
 

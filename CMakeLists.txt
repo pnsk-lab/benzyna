@@ -8,7 +8,7 @@ file(GLOB SOURCE src/*.c)
 
 add_library(ba SHARED ${LIB_SOURCE})
 target_include_directories(ba PUBLIC include)
-target_include_directories(ba PRIVATE external/stb external/nanosvg external/miniaudio external/cJSON external/glad external/zip)
+target_include_directories(ba PRIVATE external/stb external/nanosvg external/miniaudio external/cJSON external/glad external/zip external/libs)
 if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     target_include_directories(ba PRIVATE /usr/pkg/include /usr/X11R7/include)
     target_link_directories(ba PRIVATE /usr/pkg/lib /usr/X11R7/lib)

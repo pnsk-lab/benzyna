@@ -1,10 +1,5 @@
 #include <ba_runtime.h>
 
-#include <errno.h>
-#include <unistd.h>
-#include <zip.h>
-#include <sys/stat.h>
-
 static ba_bool first = ba_true;
 
 void ba_runtime_init(ba_runtime_t* rt) {
@@ -248,14 +243,8 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		 * Check if the file a valid zip file.
 		 * (This is slightly overkill yes but who knows what people will try and I like having nice errors)
 		 */
-		if(fileinfo[0] == 0x50) {
-			if(fileinfo[1] == 0x4b) {
-				if(fileinfo[2] == 0x03) {
-					if(fileinfo[3] == 0x04) {
+		if(fileinfo[0] == 0x50 || fileinfo[1] == 0x4b ||fileinfo[2] == 0x03 || fileinfo[3] == 0x04) {
 						is_valid = ba_true;
-					}
-				}
-			}
 		}
 
 		if(!is_valid) {
