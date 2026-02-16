@@ -4571,6 +4571,7 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 	pos = 0;
 	while(x >= 0) {
 		x = tts_klatt_synth(&synth, 0, &samples[pos]);
+		samples[pos] *= 3;
 		if(x < 0) break;
 		pos += x;
 	}
@@ -4596,7 +4597,7 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 		short sample;
 		int o[8];
 		int i;
-		out -= 4;
+		out -= 8;
 		--in;
 		sample = *in;
 		o[0]	    = (((sample + (3 * prev_sample)) >> 2)) * 2;
