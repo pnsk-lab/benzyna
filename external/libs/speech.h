@@ -2868,7 +2868,7 @@ static void tts_klatt_parwave(struct tts_klatt_t* klatt, struct tts_klatt_frame_
 		float		    frics;	 /* Frication sound source  */
 		float		    aspiration;	 /* Aspiration sound source  */
 		int		    nrand;	 /* Varible used by random number generator  */
-		float out;
+		float		    out;
 
 		/* Our own code like rand(), but portable
 		whole upper 31 bits of seed random
@@ -3016,7 +3016,7 @@ static int tts_phone_to_elm(char* aPhoneme, int aCount, struct tts_darray_t* aEl
 			while(n-- > 0) {
 				int		      x = *e++;
 				struct tts_element_t* p = &tts_gElement[x];
-				int stressdur;
+				int		      stressdur;
 				/* This works because only vowels have mUD != mDU,
 				and we set stress just before a vowel
 				*/
@@ -3143,9 +3143,9 @@ static void tts_klatt_initsynth(struct tts_klatt_t* klatt, int aElementCount, un
 }
 
 int tts_klatt_synth(struct tts_klatt_t* klatt, int aSampleCount, short* aSamplePointer) {
-	short* samp;
+	short*		      samp;
 	struct tts_element_t* currentElement;
-	int dur;
+	int		      dur;
 	(void)aSampleCount;
 
 	samp = aSamplePointer;
@@ -3154,7 +3154,7 @@ int tts_klatt_synth(struct tts_klatt_t* klatt, int aSampleCount, short* aSampleP
 		return -1;
 
 	currentElement = &tts_gElement[klatt->mElement[klatt->mElementIndex++]];
-	dur	     = klatt->mElement[klatt->mElementIndex++];
+	dur	       = klatt->mElement[klatt->mElementIndex++];
 	klatt->mElementIndex++; // skip stress
 
 	// Skip zero length elements which are only there to affect
@@ -3185,7 +3185,7 @@ int tts_klatt_synth(struct tts_klatt_t* klatt, int aSampleCount, short* aSampleP
 		for(t = 0; t < dur; t++, klatt->mTStress++) {
 			float base = klatt->mTop * 0.8f; // 3 * top / 5
 			float tp[TTS_ELM_COUNT];
-			int j;
+			int   j;
 
 			if(klatt->mTStress == klatt->mNTStress) {
 				int j		 = klatt->mElementIndex;
@@ -3298,8 +3298,8 @@ static void tts_klatt_init(struct tts_klatt_t* klatt) {
 	klatt->mSampleRate = 11025;
 	klatt->mF0Flutter  = 0;
 
-	FLPhz     = (950 * klatt->mSampleRate) / 10000;
-	BLPhz     = (630 * klatt->mSampleRate) / 10000;
+	FLPhz	      = (950 * klatt->mSampleRate) / 10000;
+	BLPhz	      = (630 * klatt->mSampleRate) / 10000;
 	klatt->mNspFr = (int)(klatt->mSampleRate * 10) / 1000;
 
 	tts_resonator_initResonator(&klatt->mDownSampLowPassFilter, FLPhz, BLPhz, klatt->mSampleRate);
@@ -4331,17 +4331,17 @@ static void tts_guess_word(struct tts_darray_t* arg, char* word) {
 }
 
 static int tts_NRL(const char* s, int n, struct tts_darray_t* phone, void* memctx) {
-	int old;
-	char mem[64];
+	int   old;
+	char  mem[64];
 	char* word;
 	char* d;
 
 	(void)memctx;
-	old = tts_darray_getSize(phone);
+	old  = tts_darray_getSize(phone);
 	word = mem;
 	if(n + 3 > sizeof(mem)) word = (char*)SPEECH_MALLOC(memctx, n + 3);
-	d = word;
-	*d++	= ' ';
+	d    = word;
+	*d++ = ' ';
 
 	while(n-- > 0) {
 		char ch = *s++;
@@ -4539,16 +4539,16 @@ static int tts_xlate_string(const char* string, struct tts_darray_t* phone, void
 short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 	struct tts_darray_t element;
 	struct tts_darray_t phone;
-	int frames;
-	struct tts_klatt_t synth;
-	short* sample_pairs;
-	short* samples;
-	int sample_count;
-	int x;
-	int pos;
-	short* in;
-	short* out;
-	short prev_sample;
+	int		    frames;
+	struct tts_klatt_t  synth;
+	short*		    sample_pairs;
+	short*		    samples;
+	int		    sample_count;
+	int		    x;
+	int		    pos;
+	short*		    in;
+	short*		    out;
+	short		    prev_sample;
 	tts_darray_init(&element, memctx);
 
 	tts_darray_init(&phone, memctx);
@@ -4567,13 +4567,24 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 	samples = (short*)sample_pairs;
 
 	tts_klatt_initsynth(&synth, tts_darray_getSize(&element), (unsigned char*)tts_darray_getData(&element));
-	x	= 0;
+	x   = 0;
 	pos = 0;
 	while(x >= 0) {
 		x = tts_klatt_synth(&synth, 0, &samples[pos]);
-		samples[pos] *= 3;
 		if(x < 0) break;
 		pos += x;
+	}
+
+	x	    = 0;
+	prev_sample = 0;
+	while(x < sample_count) {
+		short sample = samples[pos];
+
+		samples[pos] = (prev_sample + 3 * sample) / 2;
+
+		prev_sample = sample;
+
+		x++;
 	}
 #else
 	if(samples_pairs_generated) *samples_pairs_generated = sample_count * 4;
@@ -4582,7 +4593,7 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 	samples = (short*)sample_pairs;
 
 	tts_klatt_initsynth(&synth, tts_darray_getSize(&element), (unsigned char*)tts_darray_getData(&element));
-	x	= 0;
+	x   = 0;
 	pos = 0;
 	while(x >= 0) {
 		x = tts_klatt_synth(&synth, 0, &samples[pos]);
@@ -4590,16 +4601,16 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 		pos += x;
 	}
 
-	in	   = samples + sample_count;
-	out	   = sample_pairs + sample_count * 4 * 2;
+	in	    = samples + sample_count;
+	out	    = sample_pairs + sample_count * 4 * 2;
 	prev_sample = 0;
 	while(out > sample_pairs) {
 		short sample;
-		int o[8];
-		int i;
+		int   o[8];
+		int   i;
 		out -= 8;
 		--in;
-		sample = *in;
+		sample	    = *in;
 		o[0]	    = (((sample + (3 * prev_sample)) >> 2)) * 2;
 		o[1]	    = (((sample + prev_sample) >> 1)) * 2;
 		o[2]	    = ((((3 * sample) + prev_sample) >> 2)) * 2;
@@ -4610,7 +4621,7 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 		o[7]	    = (sample) * 2;
 		prev_sample = sample;
 		for(i = 0; i < 8; ++i) out[i] = (short)(o[i] > 32767 ? 32767 : o[i] < -32767 ? -32767
-												 : o[i]);
+											     : o[i]);
 	}
 #endif
 
