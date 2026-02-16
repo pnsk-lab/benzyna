@@ -38,7 +38,7 @@ ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json) {
 				if(enttype != NULL && enttype->type == cJSON_Number) {
 					if(4 <= enttype->valuedouble && enttype->valuedouble <= 8) {
 						entval	   = cJSON_GetArrayItem(ent, 1);
-						v.u.number = atof(entval->valuestring);
+						v.u.number = (entval->type == cJSON_Number) ? entval->valuedouble : atof(entval->valuestring);
 						v.type	   = ba_input_number;
 					} else if(enttype->valuedouble == 10) {
 						entval	   = cJSON_GetArrayItem(ent, 1);
