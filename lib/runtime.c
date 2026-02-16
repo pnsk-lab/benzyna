@@ -229,7 +229,6 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		rt->param.root_path = path;
 		rt->param.load_file = load_file_extracted;
 
-		rt->param.turbo = ba_false;
 		ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	} else {
@@ -288,7 +287,6 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		rt->param.load_file = load_file_zipped;
 
-		rt->param.turbo = ba_false;
 		ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	}

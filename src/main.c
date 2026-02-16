@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
 	if(ba_runtime_load_path(&ba, argv[1]) != 0) {
 		return 1;
-	};
+	}
 
 	while(1) {
 		ba_runtime_step(&ba);
