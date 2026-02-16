@@ -9,6 +9,16 @@ void ba_runtime_init(ba_runtime_t* rt) {
 
 	rt->param = param;
 
+	sh_new_strdup(rt->block_handlers);
+	shdefault(rt->block_handlers, NULL);
+
+	sh_new_strdup(rt->shadow_handlers);
+	shdefault(rt->shadow_handlers, NULL);
+
+	ba_block_motion(rt);
+	ba_block_looks(rt);
+	ba_block_control(rt);
+
 	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
 	if(first) {
@@ -123,6 +133,9 @@ void ba_runtime_uninit(ba_runtime_t* rt) {
 
 	for(i = 0; i < arrlen(rt->targets); i++) ba_target_free(rt->targets[i]);
 	arrfree(rt->targets);
+
+	shfree(rt->block_handlers);
+	shfree(rt->shadow_handlers);
 
 	if(rt->json != NULL) cJSON_Delete(rt->json);
 }
@@ -243,8 +256,8 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		 * Check if the file a valid zip file.
 		 * (This is slightly overkill yes but who knows what people will try and I like having nice errors)
 		 */
-		if(fileinfo[0] == 0x50 || fileinfo[1] == 0x4b ||fileinfo[2] == 0x03 || fileinfo[3] == 0x04) {
-						is_valid = ba_true;
+		if(fileinfo[0] == 0x50 || fileinfo[1] == 0x4b || fileinfo[2] == 0x03 || fileinfo[3] == 0x04) {
+			is_valid = ba_true;
 		}
 
 		if(!is_valid) {
@@ -281,4 +294,12 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 	}
 
 	return 0;
+}
+
+void ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler) {
+	shput(rt->block_handlers, name, handler);
+}
+
+void ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_shadow_handler_t handler) {
+	shput(rt->shadow_handlers, name, handler);
 }

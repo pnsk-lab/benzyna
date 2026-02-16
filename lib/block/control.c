@@ -1,29 +1,37 @@
 #include <ba_runtime.h>
 
-static ba_bool control_forever(ba_thread_t* thread) {
+static int control_wait(ba_thread_t* thread) {
+	thread->vsync = ba_true;
+
+	return ba_status_next;
+}
+
+static ba_bool control_forever_check(ba_thread_t* thread) {
 	return ba_true;
 }
 
-static ba_bool control_repeat(ba_thread_t* thread) {
+static int control_forever(ba_thread_t* thread) {
+	arrput(thread->stack, thread->block);
+	arrput(thread->checkstack, control_forever_check);
+	thread->block = thread->block->children;
+
+	return ba_status_stay;
+}
+
+static ba_bool control_repeat_check(ba_thread_t* thread) {
 	return ba_false;
 }
 
-int ba_block_control(ba_thread_t* thread) {
-	if(strcmp(thread->block->opcode, "control_wait") == 0) {
-		thread->vsync = ba_true;
+static int control_repeat(ba_thread_t* thread) {
+	arrput(thread->stack, thread->block);
+	arrput(thread->checkstack, control_repeat_check);
+	thread->block = thread->block->children;
 
-		return ba_status_next;
-	} else if(strcmp(thread->block->opcode, "control_forever") == 0) {
-		arrput(thread->stack, thread->block);
-		arrput(thread->checkstack, control_forever);
-		thread->block = thread->block->children;
-	} else if(strcmp(thread->block->opcode, "control_repeat") == 0) {
-		arrput(thread->stack, thread->block);
-		arrput(thread->checkstack, control_repeat);
-		thread->block = thread->block->children;
-	} else {
-		return ba_status_declined;
-	}
+	return ba_status_stay;
+}
 
-	return ba_status_ok;
+void ba_block_control(ba_runtime_t* rt) {
+	ba_runtime_block_handler(rt, "control_wait", control_wait);
+	ba_runtime_block_handler(rt, "control_forever", control_forever);
+	ba_runtime_block_handler(rt, "control_repeat", control_repeat);
 }

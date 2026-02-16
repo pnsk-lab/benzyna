@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 	ba.param.make_current  = make_current;
 	ba.param.swap_buffer   = swap_buffer;
 	ba.param.swap_interval = swap_interval;
-	ba.param.turbo	       = ba_false;
+	ba.param.turbo	       = ba_true;
 	ba_runtime_init(&ba);
 
 	if(ba_runtime_load_path(&ba, argv[1]) != 0) {

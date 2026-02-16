@@ -48,25 +48,29 @@ typedef unsigned char ba_bool;
 #define ba_false ((ba_bool)0)
 #define ba_true ((ba_bool)1)
 
-typedef struct ba_runtime_param ba_runtime_param_t;
-typedef struct ba_runtime	ba_runtime_t;
-typedef struct ba_target	ba_target_t;
-typedef struct ba_costume	ba_costume_t;
-typedef struct ba_block		ba_block_t;
-typedef struct ba_blockkv	ba_blockkv_t;
-typedef struct ba_thread	ba_thread_t;
-typedef union ba_input_union	ba_input_union_t;
-typedef struct ba_input		ba_input_t;
-typedef struct ba_inputkv	ba_inputkv_t;
-typedef struct ba_sprite	ba_sprite_t;
-typedef struct ba_stringkv	ba_stringkv_t;
-typedef struct ba_stringlistkv	ba_stringlistkv_t;
+typedef struct ba_runtime_param	   ba_runtime_param_t;
+typedef struct ba_runtime	   ba_runtime_t;
+typedef struct ba_target	   ba_target_t;
+typedef struct ba_costume	   ba_costume_t;
+typedef struct ba_block		   ba_block_t;
+typedef struct ba_blockkv	   ba_blockkv_t;
+typedef struct ba_thread	   ba_thread_t;
+typedef union ba_input_union	   ba_input_union_t;
+typedef struct ba_input		   ba_input_t;
+typedef struct ba_inputkv	   ba_inputkv_t;
+typedef struct ba_sprite	   ba_sprite_t;
+typedef struct ba_stringkv	   ba_stringkv_t;
+typedef struct ba_stringlistkv	   ba_stringlistkv_t;
+typedef struct ba_block_handlerkv  ba_block_handlerkv_t;
+typedef struct ba_shadow_handlerkv ba_shadow_handlerkv_t;
 
 typedef unsigned char* (*ba_load_file_t)(ba_runtime_t* rt, const char* path, int* size);
 typedef void (*ba_swap_buffer_t)(ba_runtime_t* rt);
 typedef void (*ba_make_current_t)(ba_runtime_t* rt);
 typedef void (*ba_swap_interval_t)(ba_runtime_t* rt, int interval);
 typedef ba_bool (*ba_check_loop_t)(ba_thread_t* thread);
+typedef int (*ba_block_handler_t)(ba_thread_t* thread);
+typedef char* (*ba_shadow_handler_t)(ba_thread_t* thread);
 
 enum ba_input_type {
 	ba_input_number = 0, /* treat 4/5/6/7/8 as same thing */
@@ -79,8 +83,7 @@ enum ba_input_type {
 };
 
 enum ba_status {
-	ba_status_ok = 0,
-	ba_status_declined,
+	ba_status_stay = 0,
 	ba_status_next
 };
 
@@ -122,6 +125,9 @@ struct ba_runtime {
 	void* user;
 
 	ba_runtime_param_t param;
+
+	ba_block_handlerkv_t*  block_handlers;
+	ba_shadow_handlerkv_t* shadow_handlers;
 };
 
 struct ba_target {
@@ -227,6 +233,16 @@ struct ba_stringlistkv {
 	char** value;
 };
 
+struct ba_block_handlerkv {
+	char*		   key;
+	ba_block_handler_t value;
+};
+
+struct ba_shadow_handlerkv {
+	char*		    key;
+	ba_shadow_handler_t value;
+};
+
 /* runtime.c */
 BADECL void	    ba_runtime_init(ba_runtime_t* rt);
 BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
@@ -234,6 +250,8 @@ BADECL void	    ba_runtime_step(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
 BADECL int	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
+BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler);
+BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_shadow_handler_t handler);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);
@@ -276,9 +294,9 @@ BADECL void	    ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite); /* intern
 BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
 
 /* blocks */
-BADECL int ba_block_motion(ba_thread_t* thread);
-BADECL int ba_block_looks(ba_thread_t* thread);
-BADECL int ba_block_control(ba_thread_t* thread);
+BADECL void ba_block_motion(ba_runtime_t* rt);
+BADECL void ba_block_looks(ba_runtime_t* rt);
+BADECL void ba_block_control(ba_runtime_t* rt);
 
 /* shadows */
 BADECL char* ba_shadow_operator(ba_thread_t* thread, const char* block);

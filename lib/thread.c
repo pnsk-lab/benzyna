@@ -27,15 +27,14 @@ static ba_bool control_repeat(ba_thread_t* thread) {
 }
 
 void ba_thread_exec(ba_thread_t* thread) {
-	int st;
-	int n;
+	int		   st;
+	int		   n;
+	ba_block_handler_t handler;
 
-	n = arrlen(thread->stack);
-	if((st = ba_block_motion(thread)) != ba_status_declined) {
-	} else if((st = ba_block_looks(thread)) != ba_status_declined) {
-	} else if((st = ba_block_control(thread)) != ba_status_declined) {
-	} else {
-		st = ba_status_next;
+	n  = arrlen(thread->stack);
+	st = ba_status_next;
+	if((handler = shget(thread->runtime->block_handlers, thread->block->opcode)) != NULL) {
+		st = handler(thread);
 	}
 
 	if(st == ba_status_next) {
