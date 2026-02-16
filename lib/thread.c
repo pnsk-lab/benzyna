@@ -28,10 +28,8 @@ static ba_bool control_repeat(ba_thread_t* thread) {
 
 void ba_thread_exec(ba_thread_t* thread) {
 	int		   st;
-	int		   n;
 	ba_block_handler_t handler;
 
-	n  = arrlen(thread->stack);
 	st = ba_status_next;
 	if((handler = shget(thread->runtime->block_handlers, thread->block->opcode)) != NULL) {
 		st = handler(thread);
@@ -41,33 +39,26 @@ void ba_thread_exec(ba_thread_t* thread) {
 		thread->block = thread->block->next;
 	}
 
-	if(n != arrlen(thread->stack)) {
-		n	      = arrlen(thread->stack) - 1;
-		thread->vsync = ba_true;
-
-		if(!thread->checkstack[n](thread)) {
-			thread->block = thread->stack[n]->next;
-
-			arrdel(thread->stack, n);
-			arrdel(thread->checkstack, n);
-		}
-	}
-
 recheck:;
 	if(thread->block == NULL) {
-		if(arrlen(thread->stack) == 0) {
+		if(arrlen(thread->loopstack) == 0) {
 			thread->stopped = ba_true;
 		} else {
-			n = arrlen(thread->stack) - 1;
+			int n = arrlen(thread->loopstack) - 1;
 
-			thread->block = thread->stack[n];
+			if(thread->checkstack[n](thread)) {
+				thread->block = thread->loopstack[n];
+			} else {
+				thread->block = thread->escstack[n];
 
-			if(!thread->checkstack[n](thread)) {
-				thread->block = thread->block->next;
+				if(thread->argstack[n] != NULL) free(thread->argstack[n]);
+
+				arrdel(thread->loopstack, n);
+				arrdel(thread->escstack, n);
+				arrdel(thread->checkstack, n);
+				arrdel(thread->argstack, n);
 			}
-
-			arrdel(thread->stack, n);
-			arrdel(thread->checkstack, n);
+			thread->vsync = ba_true;
 
 			goto recheck;
 		}
@@ -84,8 +75,13 @@ void ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread) {
 		}
 	}
 
+	for(i = 0; i < arrlen(thread->argstack); i++) {
+		if(thread->argstack[i] != NULL) free(thread->argstack[i]);
+	}
+
 	arrfree(thread->checkstack);
-	arrfree(thread->stack);
+	arrfree(thread->loopstack);
+	arrfree(thread->escstack);
 	free(thread);
 }
 

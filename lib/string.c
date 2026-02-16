@@ -32,3 +32,19 @@ char* ba_string_concat(const char* str, ...) {
 
 	return r;
 }
+
+ba_bool ba_string_is_number(const char* str) {
+	char*  end;
+	double d = strtod(str, &end);
+
+	if(end == str || end[0] != 0 || errno) return ba_false;
+
+	return ba_true;
+}
+
+ba_bool ba_string_is_false(const char* str) {
+	if(ba_string_is_number(str) && atof(str) == 0) return ba_false;
+	if(strcmp(str, "false") == 0) return ba_false;
+
+	return ba_true;
+}

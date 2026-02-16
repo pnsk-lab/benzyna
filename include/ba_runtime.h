@@ -20,7 +20,7 @@
 #define BA_WIDTH 480
 #define BA_HEIGHT 360
 
-#define BA_FORMAT_MAX_DIGITS "16"
+#define BA_FORMAT_MAX_DIGITS "15"
 #define BA_FORMAT_DOUBLE "%." BA_FORMAT_MAX_DIGITS "lf"
 #define BA_FORMAT_FLOAT "%." BA_FORMAT_MAX_DIGITS "f"
 
@@ -136,7 +136,7 @@ struct ba_target {
 	ba_bool stage;
 
 	ba_costume_t**	   costumes;
-	ba_stringkv_t*	   variables;
+	ba_stringkv_t*	   variables; /* don't modify this! modify ba_sprite.variables instead. */
 	ba_stringlistkv_t* lists;
 	ba_blockkv_t*	   blocks;
 	ba_block_t**	   tree;
@@ -168,7 +168,8 @@ struct ba_block {
 	ba_block_t* prev;
 	ba_block_t* next;
 
-	ba_inputkv_t* inputs;
+	ba_inputkv_t*  inputs;
+	ba_stringkv_t* fields;
 
 	ba_bool toplevel;
 	char*	opcode;
@@ -184,8 +185,10 @@ struct ba_thread {
 
 	ba_sprite_t*	 sprite;
 	ba_block_t*	 block;
-	ba_block_t**	 stack;
-	ba_check_loop_t* checkstack;
+	ba_block_t**	 loopstack;
+	ba_block_t**	 escstack;
+	ba_check_loop_t* checkstack; /* if function returns true, go loop */
+	void**		 argstack;
 
 	ba_bool vsync;
 	ba_bool stopped;
@@ -260,8 +263,10 @@ BADECL void ba_render(ba_runtime_t* rt);
 BADECL void ba_log(const char* fmt, ...);
 
 /* string.c */
-BADECL char* ba_string_dup(const char* str);
-BADECL char* ba_string_concat(const char* str, ...);
+BADECL char*   ba_string_dup(const char* str);
+BADECL char*   ba_string_concat(const char* str, ...);
+BADECL ba_bool ba_string_is_number(const char* str);
+BADECL ba_bool ba_string_is_false(const char* str); /* otherwise - treat it as true */
 
 /* thread.c */
 BADECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
@@ -287,6 +292,7 @@ BADECL void	     ba_costume_free(ba_costume_t* costume);
 BADECL ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json);
 BADECL void	   ba_block_print(ba_block_t* block);
 BADECL void	   ba_block_free(ba_block_t* block); /* this DOES NOT free tree */
+BADECL ba_input_t* ba_block_input(ba_block_t* block, const char* input);
 
 /* sprite.c */
 BADECL ba_sprite_t* ba_sprite_start(ba_runtime_t* rt, ba_target_t* target);

@@ -118,3 +118,11 @@ void ba_block_free(ba_block_t* block) {
 	if(block->opcode != NULL) free(block->opcode);
 	free(block);
 }
+
+ba_input_t* ba_block_input(ba_block_t* block, const char* input) {
+	int ind;
+
+	if((ind = shgeti(block->inputs, input)) == -1) return NULL;
+
+	return &block->inputs[ind].value;
+}

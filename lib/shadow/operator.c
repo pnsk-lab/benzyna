@@ -59,6 +59,36 @@ static char* operator_random(ba_thread_t* thread, ba_block_t* block) {
 
 	return b;
 }
+
+static char* operator_equals(ba_thread_t* thread, ba_block_t* block) {
+	char* str1 = NULL;
+	char* str2 = NULL;
+	char* b	   = NULL;
+
+	if((str1 = ba_thread_input2(thread, block, "OPERAND1")) != NULL && (str2 = ba_thread_input2(thread, block, "OPERAND2")) != NULL) {
+		ba_bool c;
+
+		b = malloc(8);
+
+		if(ba_string_is_number(str1) && ba_string_is_number(str2)) {
+			c = atof(str1) == atof(str2);
+		} else {
+			c = strcmp(str1, str2) == 0;
+		}
+
+		if(c) {
+			strcpy(b, "true");
+		} else {
+			strcpy(b, "false");
+		}
+	}
+
+	if(str1 != NULL) free(str1);
+	if(str2 != NULL) free(str2);
+
+	return b;
+}
+
 void ba_shadow_operator(ba_runtime_t* rt) {
 	ba_runtime_shadow_handler(rt, "operator_round", operator_round);
 	ba_runtime_shadow_handler(rt, "operator_add", operator_add);
@@ -66,4 +96,5 @@ void ba_shadow_operator(ba_runtime_t* rt) {
 	ba_runtime_shadow_handler(rt, "operator_multiply", operator_multiply);
 	ba_runtime_shadow_handler(rt, "operator_divide", operator_divide);
 	ba_runtime_shadow_handler(rt, "operator_random", operator_random);
+	ba_runtime_shadow_handler(rt, "operator_equals", operator_equals);
 }
