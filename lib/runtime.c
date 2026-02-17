@@ -73,6 +73,8 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 
 		spr = ba_sprite_start(rt, rt->targets[i]);
 
+		spr->angle = 180; /* XXX: or is it? i am not sure */
+
 		js = cJSON_GetObjectItem(rt->targets[i]->json, "currentCostume");
 		if(js != NULL && js->type == cJSON_Number) spr->costume = js->valuedouble;
 		js = cJSON_GetObjectItem(rt->targets[i]->json, "x");
