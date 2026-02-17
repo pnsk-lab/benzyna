@@ -40,9 +40,13 @@ int main(int argc, char** argv) {
 	ba.param.make_current  = make_current;
 	ba.param.swap_buffer   = swap_buffer;
 	ba.param.swap_interval = swap_interval;
-	ba_runtime_init(&ba);
 
-	if(ba_runtime_load_path(&ba, argv[1]) != 0) {
+	if(!ba_runtime_init(&ba)) {
+		return 1;
+	}
+
+	if(!ba_runtime_load_path(&ba, argv[1])) {
+		ba_runtime_uninit(&ba);
 		return 1;
 	}
 

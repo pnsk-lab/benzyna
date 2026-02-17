@@ -89,10 +89,12 @@ enum ba_status {
 
 #if defined(_BENZYNA)
 typedef struct ba_texture ba_texture_t;
+typedef struct ba_audio	  ba_audio_t;
 
 typedef cJSON ba_cJSON;
 #else
 typedef void ba_texture_t;
+typedef void ba_audio_t;
 
 typedef void ba_cJSON;
 #endif
@@ -100,6 +102,14 @@ typedef void ba_cJSON;
 #if defined(_BENZYNA)
 struct ba_texture {
 	GLuint id;
+};
+
+struct ba_audio {
+	ba_bool init;
+
+	ma_device	 device;
+	ma_device_config config;
+	ma_mutex	 mutex;
 };
 #endif
 
@@ -121,6 +131,8 @@ struct ba_runtime {
 	ba_target_t** targets;
 	ba_thread_t** threads;
 	ba_sprite_t** sprites;
+
+	ba_audio_t* audio;
 
 	void* user;
 
@@ -247,14 +259,18 @@ struct ba_shadow_handlerkv {
 };
 
 /* runtime.c */
-BADECL void	    ba_runtime_init(ba_runtime_t* rt);
-BADECL void	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
+BADECL ba_bool	    ba_runtime_init(ba_runtime_t* rt);
+BADECL ba_bool	    ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size);
 BADECL void	    ba_runtime_step(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
-BADECL int	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
+BADECL ba_bool	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
 BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler);
 BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_shadow_handler_t handler);
+
+/* audio.c */
+BADECL ba_audio_t* ba_audio_open(void);
+BADECL void	   ba_audio_close(ba_audio_t* audio);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);

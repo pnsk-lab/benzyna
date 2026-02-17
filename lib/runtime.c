@@ -2,7 +2,7 @@
 
 static ba_bool first = ba_true;
 
-void ba_runtime_init(ba_runtime_t* rt) {
+ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_runtime_param_t param = rt->param;
 
 	memset(rt, 0, sizeof(*rt));
@@ -20,6 +20,12 @@ void ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_control(rt);
 
 	ba_shadow_operator(rt);
+
+	if((rt->audio = ba_audio_open()) == NULL) {
+		ba_runtime_uninit(rt);
+
+		return ba_false;
+	}
 
 	if(rt->param.make_current != NULL) rt->param.make_current(rt);
 
@@ -42,15 +48,17 @@ void ba_runtime_init(ba_runtime_t* rt) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	return ba_true;
 }
 
-void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
+ba_bool ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 	cJSON* targets;
 	int    i;
 
-	if((rt->json = cJSON_ParseWithLength(data, size)) == NULL) return;
+	if((rt->json = cJSON_ParseWithLength(data, size)) == NULL) return ba_false;
 
-	if((targets = cJSON_GetObjectItem(rt->json, "targets")) == NULL || targets->type != cJSON_Array) return;
+	if((targets = cJSON_GetObjectItem(rt->json, "targets")) == NULL || targets->type != cJSON_Array) return ba_false;
 
 	ba_log("%d target(s)", cJSON_GetArraySize(targets));
 
@@ -58,7 +66,7 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 	while(targets != NULL) {
 		ba_target_t* t = ba_target_parse(rt, targets);
 		if(t == NULL) {
-			return;
+			return ba_false;
 		}
 
 		arrput(rt->targets, t);
@@ -94,6 +102,8 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 			}
 		}
 	}
+
+	return ba_true;
 }
 
 void ba_runtime_step(ba_runtime_t* rt) {
@@ -137,6 +147,8 @@ void ba_runtime_uninit(ba_runtime_t* rt) {
 
 	shfree(rt->block_handlers);
 	shfree(rt->shadow_handlers);
+
+	if(rt->audio != NULL) ba_audio_close(rt->audio);
 
 	if(rt->json != NULL) cJSON_Delete(rt->json);
 }
@@ -199,17 +211,18 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 	return d;
 }
 
-int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
+ba_bool ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 	FILE*	    f;
 	size_t	    sz = 0;
 	char*	    buffer;
 	struct stat s;
+	ba_bool	    r = ba_true;
 
 	stat(path, &s);
 
 	if(access(path, F_OK) != 0) {
 		ba_log("Failed to open %s: No such file or directory", path);
-		return 1;
+		return ba_false;
 	}
 
 	/* is path a directory? */
@@ -222,7 +235,7 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		if((f = fopen(p, "r")) == NULL) {
 			ba_log("Failed to open %s: %s", path, strerror(errno));
 			free(p);
-			return 1;
+			return ba_false;
 		}
 		free(p);
 
@@ -238,7 +251,7 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		rt->param.root_path = path;
 		rt->param.load_file = load_file_extracted;
 
-		ba_runtime_load_project(rt, buffer, sz);
+		r = ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	} else {
 		char	fileinfo[15];
@@ -248,7 +261,7 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		if((f = fopen(path, "r")) == NULL) {
 			ba_log("Failed to open file %s: %s", f, strerror(errno));
-			return 1;
+			return ba_false;
 		}
 		fread(fileinfo, 1, 15, f);
 		fclose(f);
@@ -263,7 +276,7 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		if(!is_valid) {
 			ba_log("%s is not a valid .sb3 file. Please note that currently only .sb3 and extracted folders are supported.", f);
-			return 1;
+			return ba_false;
 		}
 
 		ba_log("Loading file %s", path);
@@ -275,12 +288,12 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 		rt->param.zip = zip_openwitherror(path, compression_level, 'r', &errnum);
 		if(errnum != 0) {
 			ba_log("Error opening %s: %s", f, zip_strerror(errnum));
-			return 1;
+			return ba_false;
 		}
 
 		if((errnum = zip_entry_open(rt->param.zip, "project.json")) != 0) {
 			ba_log("Error accessing %s/project.json: %s", f, zip_strerror(errnum));
-			return 1;
+			return ba_false;
 		}
 
 		sz = zip_entry_size(rt->param.zip);
@@ -290,11 +303,11 @@ int ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		rt->param.load_file = load_file_zipped;
 
-		ba_runtime_load_project(rt, buffer, sz);
+		r = ba_runtime_load_project(rt, buffer, sz);
 		free(buffer);
 	}
 
-	return 0;
+	return r;
 }
 
 void ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler) {

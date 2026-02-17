@@ -31,7 +31,13 @@ void ba_thread_exec(ba_thread_t* thread) {
 	ba_block_handler_t handler;
 
 	st = ba_status_next;
+	if(strcmp(thread->block->opcode, "sound_play") == 0) {
+		char* n = ba_thread_input2(thread, thread->block, "SOUND_MENU");
+
+		printf("%s\n", n == NULL ? "(null)" : "");
+	}
 	if((handler = shget(thread->runtime->block_handlers, thread->block->opcode)) != NULL) {
+
 		st = handler(thread);
 	}
 
