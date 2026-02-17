@@ -81,7 +81,7 @@ void ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 		if(js != NULL && js->type == cJSON_Number) spr->y = js->valuedouble;
 		js = cJSON_GetObjectItem(rt->targets[i]->json, "direction");
 		if(js != NULL && js->type == cJSON_Number) {
-			spr->angle = -js->valuedouble;
+			spr->angle = js->valuedouble;
 		}
 
 		for(j = 0; j < arrlen(rt->targets[i]->tree); j++) {
