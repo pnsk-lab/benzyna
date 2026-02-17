@@ -301,6 +301,9 @@ BADECL void	    ba_sprite_kill(ba_runtime_t* rt, ba_sprite_t* sprite); /* intern
 /* exec.c */
 BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
 
+/* time.c */
+BADECL double ba_time_tick(void);
+
 /* blocks */
 BADECL void ba_block_motion(ba_runtime_t* rt);
 BADECL void ba_block_looks(ba_runtime_t* rt);

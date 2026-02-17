@@ -4,8 +4,8 @@ static int motion_movesteps(ba_thread_t* thread) {
 	char* str;
 
 	if((str = ba_thread_input(thread, "STEPS")) != NULL) {
-		double c = cos(-thread->sprite->angle / 180 * M_PI);
-		double s = sin(-thread->sprite->angle / 180 * M_PI);
+		double c = cos(thread->sprite->angle / 180 * M_PI);
+		double s = sin(thread->sprite->angle / 180 * M_PI);
 
 		thread->sprite->x += c * atof(str);
 		thread->sprite->y += s * atof(str);
@@ -22,7 +22,7 @@ static int motion_turnleft(ba_thread_t* thread) {
 	char* str;
 
 	if((str = ba_thread_input(thread, "DEGREES")) != NULL) {
-		thread->sprite->angle += -atof(str);
+		thread->sprite->angle += atof(str);
 		free(str);
 	}
 
@@ -33,7 +33,7 @@ static int motion_turnright(ba_thread_t* thread) {
 	char* str;
 
 	if((str = ba_thread_input(thread, "DEGREES")) != NULL) {
-		thread->sprite->angle += atof(str);
+		thread->sprite->angle += -atof(str);
 		free(str);
 	}
 
