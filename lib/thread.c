@@ -31,13 +31,7 @@ void ba_thread_exec(ba_thread_t* thread) {
 	ba_block_handler_t handler;
 
 	st = ba_status_next;
-	if(strcmp(thread->block->opcode, "sound_play") == 0) {
-		char* n = ba_thread_input2(thread, thread->block, "SOUND_MENU");
-
-		printf("%s\n", n == NULL ? "(null)" : "");
-	}
 	if((handler = shget(thread->runtime->block_handlers, thread->block->opcode)) != NULL) {
-
 		st = handler(thread);
 	}
 
@@ -101,4 +95,16 @@ char* ba_thread_input2(ba_thread_t* thread, ba_block_t* block, const char* input
 	if(ind == -1) return NULL;
 
 	return ba_exec(thread, &block->inputs[ind].value);
+}
+
+char* ba_thread_field(ba_thread_t* thread, const char* field) {
+	return ba_thread_field2(thread, thread->block, field);
+}
+
+char* ba_thread_field2(ba_thread_t* thread, ba_block_t* block, const char* field) {
+	int ind = shgeti(block->fields, field);
+
+	if(ind == -1) return NULL;
+
+	return ba_string_dup(block->fields[ind].value);
 }

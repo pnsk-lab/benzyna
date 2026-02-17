@@ -288,9 +288,12 @@ BADECL ba_bool ba_string_is_false(const char* str); /* otherwise - treat it as t
 BADECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
 BADECL void	    ba_thread_stop(ba_thread_t* thread);
 BADECL void	    ba_thread_exec(ba_thread_t* thread);
-BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread);   /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
-BADECL char*	    ba_thread_input(ba_thread_t* thread, const char* input); /* this gets input from current block ; useful for blocks */
-BADECL char*	    ba_thread_input2(ba_thread_t* thread, ba_block_t* block, const char* input);
+BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread); /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
+/* note - all of them actually allocate memory */
+BADECL char* ba_thread_input(ba_thread_t* thread, const char* input); /* this gets input from current block ; useful for blocks */
+BADECL char* ba_thread_input2(ba_thread_t* thread, ba_block_t* block, const char* input);
+BADECL char* ba_thread_field(ba_thread_t* thread, const char* field); /* this gets field from current block ; useful for blocks */
+BADECL char* ba_thread_field2(ba_thread_t* thread, ba_block_t* block, const char* field);
 
 /* texture.c */
 BADECL ba_texture_t* ba_texture_load(ba_costume_t* costume);

@@ -80,6 +80,17 @@ ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json) {
 		fields = fields->child;
 
 		while(fields != NULL) {
+			if(fields->type == cJSON_Array && cJSON_GetArraySize(fields) == 2) {
+				char*  v = NULL;
+				cJSON* e;
+
+				if(((e = cJSON_GetArrayItem(fields, 1)) != NULL && e->type == cJSON_String) || ((e = cJSON_GetArrayItem(fields, 0)) != NULL && e->type == cJSON_String)) {
+					v = ba_string_dup(e->valuestring);
+				}
+
+				if(v != NULL) shput(block->fields, fields->string, v);
+			}
+
 			fields = fields->next;
 		}
 	}
@@ -126,7 +137,7 @@ void ba_block_free(ba_block_t* block) {
 	}
 	shfree(block->inputs);
 
-	for(i = 0; i < shlen(block->fields); i++) free(block->fields[i]);
+	for(i = 0; i < shlen(block->fields); i++) free(block->fields[i].value);
 	shfree(block->fields);
 
 	if(block->opcode != NULL) free(block->opcode);
