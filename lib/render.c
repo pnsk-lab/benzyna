@@ -15,7 +15,7 @@ static void draw_sprite(ba_runtime_t* rt, ba_sprite_t* spr) {
 	glColor3f(1, 1, 1);
 	glPushMatrix();
 	glTranslatef(spr->x, spr->y, 0);
-	glRotatef(-spr->angle + 90, 0, 0, 1);
+	glRotatef(-spr->angle + 180, 0, 0, 1);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0, 0);
 	glVertex2f(-cx, cy);
