@@ -9,24 +9,19 @@ ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block) {
 
 	thread->runtime = rt;
 
+	thread->autoclean = ba_false;
+
 	arrput(rt->threads, thread);
 
 	return thread;
 }
 
 void ba_thread_stop(ba_thread_t* thread) {
-	thread->stopped = ba_true;
+	thread->stopped	  = ba_true;
+	thread->autoclean = ba_true;
 }
 
-static ba_bool control_forever(ba_thread_t* thread) {
-	return ba_true;
-}
-
-static ba_bool control_repeat(ba_thread_t* thread) {
-	return ba_false;
-}
-
-void ba_thread_exec(ba_thread_t* thread) {
+void ba_thread_step(ba_thread_t* thread) {
 	int			  st;
 	ba_thread_block_handler_t handler;
 

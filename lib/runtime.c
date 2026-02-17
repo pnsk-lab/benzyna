@@ -99,7 +99,8 @@ ba_bool ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 			if(strcmp(rt->targets[i]->tree[j]->opcode, "event_whenflagclicked") == 0) {
 				ba_thread_t* thread = ba_thread_start(rt, rt->targets[i]->tree[j]);
 
-				thread->sprite = spr;
+				thread->sprite	  = spr;
+				thread->autoclean = ba_true; /* since we don't have to check their state, mark them as auto-cleanable */
 			}
 		}
 	}
@@ -125,13 +126,13 @@ void ba_runtime_step(ba_runtime_t* rt) {
 
 			loop = ba_true;
 
-			ba_thread_exec(rt->threads[i]);
+			ba_thread_step(rt->threads[i]);
 		}
 	} while(loop);
 
 	for(i = 0; i < arrlen(rt->threads); i++) {
 		rt->threads[i]->vsync = ba_false;
-		if(rt->threads[i]->stopped) {
+		if(rt->threads[i]->stopped && rt->threads[i]->autoclean) {
 			ba_thread_kill(rt, rt->threads[i]);
 			i--;
 		}

@@ -219,6 +219,7 @@ struct ba_thread {
 
 	ba_bool vsync;
 	ba_bool stopped;
+	ba_bool autoclean;
 
 	ba_thread_wait_t wait;
 };
@@ -304,7 +305,7 @@ BADECL ba_bool ba_string_is_false(const char* str); /* otherwise - treat it as t
 /* thread.c */
 BADECL ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block);
 BADECL void	    ba_thread_stop(ba_thread_t* thread);
-BADECL void	    ba_thread_exec(ba_thread_t* thread);
+BADECL void	    ba_thread_step(ba_thread_t* thread);
 BADECL void	    ba_thread_kill(ba_runtime_t* rt, ba_thread_t* thread); /* you want to use ba_thread_stop - ba_thread_kill actually removes entry */
 /* note - all of them actually allocate memory */
 BADECL char* ba_thread_input(ba_thread_t* thread, const char* input); /* this gets input from current block ; useful for blocks */
