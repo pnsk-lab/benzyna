@@ -783,7 +783,7 @@ static float nsvg__actualHeight(NSVGparser* p)
 static float nsvg__actualLength(NSVGparser* p)
 {
 	float w = nsvg__actualWidth(p), h = nsvg__actualHeight(p);
-	return sqrtf(w*w + h*h) / sqrtf(2.0f);
+	return sqrt(w*w + h*h) / sqrt(2.0f);
 }
 
 static float nsvg__convertToPixels(NSVGparser* p, NSVGcoordinate c, float orig, float length)
@@ -864,7 +864,7 @@ static NSVGgradient* nsvg__createGradient(NSVGparser* p, const char* id, const f
 		sw = nsvg__actualWidth(p);
 		sh = nsvg__actualHeight(p);
 	}
-	sl = sqrtf(sw*sw + sh*sh) / sqrtf(2.0f);
+	sl = sqrt(sw*sw + sh*sh) / sqrt(2.0f);
 
 	if (data->type == NSVG_PAINT_LINEAR_GRADIENT) {
 		float x1, y1, x2, y2, dx, dy;
@@ -907,8 +907,8 @@ static NSVGgradient* nsvg__createGradient(NSVGparser* p, const char* id, const f
 
 static float nsvg__getAverageScale(float* t)
 {
-	float sx = sqrtf(t[0]*t[0] + t[2]*t[2]);
-	float sy = sqrtf(t[1]*t[1] + t[3]*t[3]);
+	float sx = sqrt(t[0]*t[0] + t[2]*t[2]);
+	float sy = sqrt(t[1]*t[1] + t[3]*t[3]);
 	return (sx + sy) * 0.5f;
 }
 
@@ -1526,7 +1526,9 @@ static NSVGcoordinate nsvg__parseCoordinateRaw(const char* str)
 
 static NSVGcoordinate nsvg__coord(float v, int units)
 {
-	NSVGcoordinate coord = {v, units};
+	NSVGcoordinate coord;
+	coord.value = v;
+	coord.units = units;
 	return coord;
 }
 
@@ -1763,7 +1765,7 @@ static int nsvg__parseStrokeDashArray(NSVGparser* p, const char* str, float* str
 		str = nsvg__getNextDashItem(str, item);
 		if (!*item) break;
 		if (count < NSVG_MAX_DASHES)
-			strokeDashArray[count++] = fabsf(nsvg__parseCoordinate(p, item, 0.0f, nsvg__actualLength(p)));
+			strokeDashArray[count++] = fabs(nsvg__parseCoordinate(p, item, 0.0f, nsvg__actualLength(p)));
 	}
 
 	for (i = 0; i < count; i++)
@@ -2116,7 +2118,7 @@ static void nsvg__pathQuadBezShortTo(NSVGparser* p, float* cpx, float* cpy,
 }
 
 static float nsvg__sqr(float x) { return x*x; }
-static float nsvg__vmag(float x, float y) { return sqrtf(x*x + y*y); }
+static float nsvg__vmag(float x, float y) { return sqrt(x*x + y*y); }
 
 static float nsvg__vecrat(float ux, float uy, float vx, float vy)
 {
@@ -2144,11 +2146,11 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 	int i, ndivs;
 	float hda, kappa;
 
-	rx = fabsf(args[0]);				// y radius
-	ry = fabsf(args[1]);				// x radius
+	rx = fabs(args[0]);				// y radius
+	ry = fabs(args[1]);				// x radius
 	rotx = args[2] / 180.0f * NSVG_PI;		// x rotation angle
-	fa = fabsf(args[3]) > 1e-6 ? 1 : 0;	// Large arc
-	fs = fabsf(args[4]) > 1e-6 ? 1 : 0;	// Sweep direction
+	fa = fabs(args[3]) > 1e-6 ? 1 : 0;	// Large arc
+	fs = fabs(args[4]) > 1e-6 ? 1 : 0;	// Sweep direction
 	x1 = *cpx;							// start point
 	y1 = *cpy;
 	if (rel) {							// end point
@@ -2161,7 +2163,7 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 
 	dx = x1 - x2;
 	dy = y1 - y2;
-	d = sqrtf(dx*dx + dy*dy);
+	d = sqrt(dx*dx + dy*dy);
 	if (d < 1e-6f || rx < 1e-6f || ry < 1e-6f) {
 		// The arc degenerates to a line
 		nsvg__lineTo(p, x2, y2);
@@ -2180,7 +2182,7 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 	y1p = -sinrx * dx / 2.0f + cosrx * dy / 2.0f;
 	d = nsvg__sqr(x1p)/nsvg__sqr(rx) + nsvg__sqr(y1p)/nsvg__sqr(ry);
 	if (d > 1) {
-		d = sqrtf(d);
+		d = sqrt(d);
 		rx *= d;
 		ry *= d;
 	}
@@ -2190,7 +2192,7 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 	sb = nsvg__sqr(rx)*nsvg__sqr(y1p) + nsvg__sqr(ry)*nsvg__sqr(x1p);
 	if (sa < 0.0f) sa = 0.0f;
 	if (sb > 0.0f)
-		s = sqrtf(sa / sb);
+		s = sqrt(sa / sb);
 	if (fa == fs)
 		s = -s;
 	cxp = s * rx * y1p / ry;
@@ -2223,14 +2225,14 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 
 	// Split arc into max 90 degree segments.
 	// The loop assumes an iteration per end point (including start and end), this +1.
-	ndivs = (int)(fabsf(da) / (NSVG_PI*0.5f) + 1.0f);
+	ndivs = (int)(fabs(da) / (NSVG_PI*0.5f) + 1.0f);
 	hda = (da / (float)ndivs) / 2.0f;
 	// Fix for ticket #179: division by 0: avoid cotangens around 0 (infinite)
 	if ((hda < 1e-3f) && (hda > -1e-3f))
 		hda *= 0.5f;
 	else
 		hda = (1.0f - cos(hda)) / sin(hda);
-	kappa = fabsf(4.0f / 3.0f * hda);
+	kappa = fabs(4.0f / 3.0f * hda);
 	if (da < 0.0f)
 		kappa = -kappa;
 
@@ -2416,8 +2418,8 @@ static void nsvg__parseRect(NSVGparser* p, const char** attr)
 			if (strcmp(attr[i], "y") == 0) y = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigY(p), nsvg__actualHeight(p));
 			if (strcmp(attr[i], "width") == 0) w = nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualWidth(p));
 			if (strcmp(attr[i], "height") == 0) h = nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualHeight(p));
-			if (strcmp(attr[i], "rx") == 0) rx = fabsf(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualWidth(p)));
-			if (strcmp(attr[i], "ry") == 0) ry = fabsf(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualHeight(p)));
+			if (strcmp(attr[i], "rx") == 0) rx = fabs(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualWidth(p)));
+			if (strcmp(attr[i], "ry") == 0) ry = fabs(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualHeight(p)));
 		}
 	}
 
@@ -2466,7 +2468,7 @@ static void nsvg__parseCircle(NSVGparser* p, const char** attr)
 		if (!nsvg__parseAttr(p, attr[i], attr[i + 1])) {
 			if (strcmp(attr[i], "cx") == 0) cx = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigX(p), nsvg__actualWidth(p));
 			if (strcmp(attr[i], "cy") == 0) cy = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigY(p), nsvg__actualHeight(p));
-			if (strcmp(attr[i], "r") == 0) r = fabsf(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualLength(p)));
+			if (strcmp(attr[i], "r") == 0) r = fabs(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualLength(p)));
 		}
 	}
 
@@ -2497,8 +2499,8 @@ static void nsvg__parseEllipse(NSVGparser* p, const char** attr)
 		if (!nsvg__parseAttr(p, attr[i], attr[i + 1])) {
 			if (strcmp(attr[i], "cx") == 0) cx = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigX(p), nsvg__actualWidth(p));
 			if (strcmp(attr[i], "cy") == 0) cy = nsvg__parseCoordinate(p, attr[i+1], nsvg__actualOrigY(p), nsvg__actualHeight(p));
-			if (strcmp(attr[i], "rx") == 0) rx = fabsf(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualWidth(p)));
-			if (strcmp(attr[i], "ry") == 0) ry = fabsf(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualHeight(p)));
+			if (strcmp(attr[i], "rx") == 0) rx = fabs(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualWidth(p)));
+			if (strcmp(attr[i], "ry") == 0) ry = fabs(nsvg__parseCoordinate(p, attr[i+1], 0.0f, nsvg__actualHeight(p)));
 		}
 	}
 
