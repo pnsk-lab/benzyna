@@ -63,14 +63,17 @@ typedef struct ba_stringkv	   ba_stringkv_t;
 typedef struct ba_stringlistkv	   ba_stringlistkv_t;
 typedef struct ba_block_handlerkv  ba_block_handlerkv_t;
 typedef struct ba_shadow_handlerkv ba_shadow_handlerkv_t;
+typedef struct ba_thread_stack	   ba_thread_stack_t;
+typedef struct ba_thread_wait	   ba_thread_wait_t;
 
 typedef unsigned char* (*ba_load_file_t)(ba_runtime_t* rt, const char* path, int* size);
 typedef void (*ba_swap_buffer_t)(ba_runtime_t* rt);
 typedef void (*ba_make_current_t)(ba_runtime_t* rt);
 typedef void (*ba_swap_interval_t)(ba_runtime_t* rt, int interval);
-typedef ba_bool (*ba_check_loop_t)(ba_thread_t* thread);
-typedef int (*ba_block_handler_t)(ba_thread_t* thread);
-typedef char* (*ba_shadow_handler_t)(ba_thread_t* thread, ba_block_t* block);
+typedef ba_bool (*ba_thread_check_t)(ba_thread_t* thread);
+typedef int (*ba_thread_block_handler_t)(ba_thread_t* thread);
+typedef char* (*ba_thread_shadow_handler_t)(ba_thread_t* thread, ba_block_t* block);
+typedef void (*ba_free_t)(void* arg);
 
 enum ba_input_type {
 	ba_input_number = 0, /* treat 4/5/6/7/8 as same thing */
@@ -192,18 +195,32 @@ struct ba_blockkv {
 	ba_block_t* value;
 };
 
+struct ba_thread_stack {
+	ba_block_t*	  loop;	  /* where to jump to, if loop */
+	ba_block_t*	  escape; /* where to escape to, if not loop */
+	ba_thread_check_t check;  /* if function is non NULL and returns true, go loop */
+	void*		  arg;
+	ba_free_t	  free_arg;
+};
+
+struct ba_thread_wait {
+	ba_thread_check_t check;
+	void*		  arg;
+	ba_free_t	  free_arg;
+};
+
 struct ba_thread {
 	ba_runtime_t* runtime;
 
-	ba_sprite_t*	 sprite;
-	ba_block_t*	 block;
-	ba_block_t**	 loopstack;
-	ba_block_t**	 escstack;
-	ba_check_loop_t* checkstack; /* if function is non NULL and returns true, go loop */
-	void**		 argstack;
+	ba_sprite_t* sprite;
+	ba_block_t*  block;
+
+	ba_thread_stack_t* stack;
 
 	ba_bool vsync;
 	ba_bool stopped;
+
+	ba_thread_wait_t wait;
 };
 
 union ba_input_union {
@@ -249,13 +266,13 @@ struct ba_stringlistkv {
 };
 
 struct ba_block_handlerkv {
-	char*		   key;
-	ba_block_handler_t value;
+	char*			  key;
+	ba_thread_block_handler_t value;
 };
 
 struct ba_shadow_handlerkv {
-	char*		    key;
-	ba_shadow_handler_t value;
+	char*			   key;
+	ba_thread_shadow_handler_t value;
 };
 
 /* runtime.c */
@@ -265,8 +282,8 @@ BADECL void	    ba_runtime_step(ba_runtime_t* rt);
 BADECL void	    ba_runtime_uninit(ba_runtime_t* rt);
 BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
 BADECL ba_bool	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
-BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler);
-BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_shadow_handler_t handler);
+BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_thread_block_handler_t handler);
+BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler);
 
 /* audio.c */
 BADECL ba_audio_t* ba_audio_open(void);

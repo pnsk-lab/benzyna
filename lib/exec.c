@@ -1,12 +1,12 @@
 #include <ba_runtime.h>
 
 char* ba_exec(ba_thread_t* thread, ba_input_t* value) {
-	char*		    b = NULL;
-	int		    ind;
-	ba_sprite_t*	    spr = ba_runtime_get_stage_sprite(thread->runtime);
-	ba_shadow_handler_t handler;
-	ba_block_t*	    block;
-	char**		    list;
+	char*			   b = NULL;
+	int			   ind;
+	ba_sprite_t*		   spr = ba_runtime_get_stage_sprite(thread->runtime);
+	ba_thread_shadow_handler_t handler;
+	ba_block_t*		   block;
+	char**			   list;
 
 	switch(value->type) {
 	case ba_input_number:

@@ -1,7 +1,25 @@
 #include <ba_runtime.h>
 
+static ba_bool control_wait_check(ba_thread_t* thread) {
+	double* n = thread->wait.arg;
+
+	return (*n) >= ba_time_tick();
+}
+
 static int control_wait(ba_thread_t* thread) {
-	thread->vsync = ba_true;
+	double* n = malloc(sizeof(*n));
+	char*	str;
+
+	if((str = ba_thread_input(thread, "DURATION")) != NULL) {
+		*n = ba_time_tick() + atof(str);
+
+		memset(&thread->wait, 0, sizeof(thread->wait));
+
+		thread->wait.check = control_wait_check;
+		thread->wait.arg   = n;
+
+		free(str);
+	}
 
 	return ba_status_next;
 }
@@ -11,17 +29,21 @@ static ba_bool control_forever_check(ba_thread_t* thread) {
 }
 
 static int control_forever(ba_thread_t* thread) {
-	arrput(thread->loopstack, thread->block->children);
-	arrput(thread->escstack, NULL);
-	arrput(thread->checkstack, control_forever_check);
-	arrput(thread->argstack, NULL);
+	ba_thread_stack_t e;
+
+	memset(&e, 0, sizeof(e));
+
+	e.loop	= thread->block->children;
+	e.check = control_forever_check;
+	arrput(thread->stack, e);
+
 	thread->block = thread->block->children;
 
 	return ba_status_stay;
 }
 
 static ba_bool control_repeat_check(ba_thread_t* thread) {
-	int* n = thread->argstack[arrlen(thread->argstack) - 1];
+	int* n = thread->stack[arrlen(thread->stack) - 1].arg;
 
 	(*n)--;
 
@@ -29,8 +51,11 @@ static ba_bool control_repeat_check(ba_thread_t* thread) {
 }
 
 static int control_repeat(ba_thread_t* thread) {
-	int*  n = malloc(sizeof(*n));
-	char* str;
+	int*		  n = malloc(sizeof(*n));
+	char*		  str;
+	ba_thread_stack_t e;
+
+	memset(&e, 0, sizeof(e));
 
 	*n = 0;
 
@@ -42,19 +67,24 @@ static int control_repeat(ba_thread_t* thread) {
 
 	if((*n) == 0) return ba_status_next;
 
-	arrput(thread->loopstack, thread->block->children);
-	arrput(thread->escstack, thread->block->next);
-	arrput(thread->checkstack, control_repeat_check);
-	arrput(thread->argstack, n);
+	e.loop	 = thread->block->children;
+	e.escape = thread->block->next;
+	e.check	 = control_repeat_check;
+	e.arg	 = n;
+	arrput(thread->stack, e);
+
 	thread->block = thread->block->children;
 
 	return ba_status_stay;
 }
 
 static int control_if_else(ba_thread_t* thread) {
-	ba_input_t* substack = NULL;
-	ba_block_t* block;
-	char*	    str = NULL;
+	ba_input_t*	  substack = NULL;
+	ba_block_t*	  block;
+	char*		  str = NULL;
+	ba_thread_stack_t e;
+
+	memset(&e, 0, sizeof(e));
 
 	if((str = ba_thread_input(thread, "CONDITION")) != NULL && ba_string_is_false(str)) {
 		substack = ba_block_input(thread->block, "SUBSTACK");
@@ -66,18 +96,20 @@ static int control_if_else(ba_thread_t* thread) {
 
 	if(substack == NULL || substack->type != ba_input_block || (block = shget(thread->sprite->target->blocks, substack->u.block)) == NULL) return ba_status_next;
 
-	arrput(thread->loopstack, NULL);
-	arrput(thread->escstack, thread->block->next);
-	arrput(thread->checkstack, NULL);
-	arrput(thread->argstack, NULL);
+	e.escape = thread->block->next;
+	arrput(thread->stack, e);
+
 	thread->block = block;
 
 	return ba_status_stay;
 }
 
 static int control_if(ba_thread_t* thread) {
-	ba_block_t* block = NULL;
-	char*	    str	  = NULL;
+	ba_block_t*	  block = NULL;
+	char*		  str	= NULL;
+	ba_thread_stack_t e;
+
+	memset(&e, 0, sizeof(e));
 
 	if((str = ba_thread_input(thread, "CONDITION")) != NULL && ba_string_is_false(str)) {
 		block = thread->block->children;
@@ -87,10 +119,9 @@ static int control_if(ba_thread_t* thread) {
 
 	if(block == NULL) return ba_status_next;
 
-	arrput(thread->loopstack, NULL);
-	arrput(thread->escstack, thread->block->next);
-	arrput(thread->checkstack, NULL);
-	arrput(thread->argstack, NULL);
+	e.escape = thread->block->next;
+	arrput(thread->stack, e);
+
 	thread->block = block;
 
 	return ba_status_stay;

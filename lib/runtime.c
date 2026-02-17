@@ -115,6 +115,14 @@ void ba_runtime_step(ba_runtime_t* rt) {
 		loop = ba_false;
 		for(i = 0; i < arrlen(rt->threads); i++) {
 			if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
+			if(rt->threads[i]->wait.check != NULL && rt->threads[i]->wait.check(rt->threads[i])) continue;
+
+			if(rt->threads[i]->wait.check != NULL) {
+				if(rt->threads[i]->wait.arg != NULL) (rt->threads[i]->wait.free_arg != NULL ? rt->threads[i]->wait.free_arg : free)(rt->threads[i]->wait.arg);
+
+				memset(&rt->threads[i]->wait, 0, sizeof(rt->threads[i]->wait));
+			}
+
 			loop = ba_true;
 
 			ba_thread_exec(rt->threads[i]);
@@ -311,10 +319,10 @@ ba_bool ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 	return r;
 }
 
-void ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_block_handler_t handler) {
+void ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_thread_block_handler_t handler) {
 	shput(rt->block_handlers, name, handler);
 }
 
-void ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_shadow_handler_t handler) {
+void ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler) {
 	shput(rt->shadow_handlers, name, handler);
 }
