@@ -19,6 +19,7 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_looks(rt);
 	ba_block_control(rt);
 
+	ba_shadow_sound(rt);
 	ba_shadow_operator(rt);
 
 	if((rt->audio = ba_audio_open()) == NULL) {

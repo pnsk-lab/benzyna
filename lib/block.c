@@ -5,6 +5,7 @@ ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json) {
 	cJSON*	    toplevel;
 	cJSON*	    opcode;
 	cJSON*	    inputs;
+	cJSON*	    fields;
 
 	memset(block, 0, sizeof(*block));
 
@@ -20,6 +21,8 @@ ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json) {
 	}
 
 	sh_new_strdup(block->inputs);
+
+	sh_new_strdup(block->fields);
 
 	block->opcode = ba_string_dup(opcode->valuestring);
 
@@ -73,6 +76,14 @@ ba_block_t* ba_block_parse(ba_runtime_t* rt, ba_cJSON* json) {
 		}
 	}
 
+	if((fields = cJSON_GetObjectItem(json, "fields")) != NULL && fields->type == cJSON_Object) {
+		fields = fields->child;
+
+		while(fields != NULL) {
+			fields = fields->next;
+		}
+	}
+
 	return block;
 }
 
@@ -114,6 +125,9 @@ void ba_block_free(ba_block_t* block) {
 		}
 	}
 	shfree(block->inputs);
+
+	for(i = 0; i < shlen(block->fields); i++) free(block->fields[i]);
+	shfree(block->fields);
 
 	if(block->opcode != NULL) free(block->opcode);
 	free(block);
