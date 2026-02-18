@@ -17,6 +17,7 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 
 	ba_block_motion(rt);
 	ba_block_looks(rt);
+	ba_block_sound(rt);
 	ba_block_control(rt);
 
 	ba_shadow_sound(rt);
@@ -176,7 +177,7 @@ ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt) {
 static unsigned char* load_file_extracted(ba_runtime_t* rt, const char* path, int* size) {
 	FILE*	       f;
 	unsigned char* d;
-	char*	       p = ba_string_concat(rt->param.root_path, "/", path, NULL);
+	char*	       p = ba_string_concat(rt->u.root_path, "/", path, NULL);
 
 	ba_log("Loading %s", p);
 
@@ -202,7 +203,7 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 	unsigned char* d = NULL;
 	int	       errnum;
 
-	if((errnum = zip_entry_open(rt->param.zip, path)) != 0) {
+	if((errnum = zip_entry_open(rt->u.zip, path)) != 0) {
 		ba_log("Error accessing %s: %s", path, zip_strerror(errnum));
 		return NULL;
 	}
@@ -210,13 +211,13 @@ static unsigned char* load_file_zipped(ba_runtime_t* rt, const char* path, int* 
 	ba_log("Accessing %s", path);
 
 	/* docs recommend using zip_entry_extract which is 100% possible, but it uses a callback so more stuff has to be defined. refer to commit aeda2a if we want to do that. */
-	if((errnum = zip_entry_read(rt->param.zip, (void**)&d, (size_t*)size)) < 0) {
+	if((errnum = zip_entry_read(rt->u.zip, (void**)&d, (size_t*)size)) < 0) {
 		ba_log("Error reading %s: %s", path, zip_strerror(errnum));
-		zip_entry_close(rt->param.zip);
+		zip_entry_close(rt->u.zip);
 		return NULL;
 	};
 
-	zip_entry_close(rt->param.zip);
+	zip_entry_close(rt->u.zip);
 
 	return d;
 }
@@ -258,7 +259,7 @@ ba_bool ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		fclose(f);
 
-		rt->param.root_path = path;
+		rt->u.root_path	    = path;
 		rt->param.load_file = load_file_extracted;
 
 		r = ba_runtime_load_project(rt, buffer, sz);
@@ -295,21 +296,21 @@ ba_bool ba_runtime_load_path(ba_runtime_t* rt, const char* path) {
 
 		ba_log("Compression level %d", compression_level);
 
-		rt->param.zip = zip_openwitherror(path, compression_level, 'r', &errnum);
+		rt->u.zip = zip_openwitherror(path, compression_level, 'r', &errnum);
 		if(errnum != 0) {
 			ba_log("Error opening %s: %s", f, zip_strerror(errnum));
 			return ba_false;
 		}
 
-		if((errnum = zip_entry_open(rt->param.zip, "project.json")) != 0) {
+		if((errnum = zip_entry_open(rt->u.zip, "project.json")) != 0) {
 			ba_log("Error accessing %s/project.json: %s", f, zip_strerror(errnum));
 			return ba_false;
 		}
 
-		sz = zip_entry_size(rt->param.zip);
+		sz = zip_entry_size(rt->u.zip);
 
-		zip_entry_read(rt->param.zip, (void**)&buffer, &sz);
-		zip_entry_close(rt->param.zip);
+		zip_entry_read(rt->u.zip, (void**)&buffer, &sz);
+		zip_entry_close(rt->u.zip);
 
 		rt->param.load_file = load_file_zipped;
 

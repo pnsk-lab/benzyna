@@ -33,6 +33,9 @@
 #include <nanosvgrast.h>
 #include <zip.h>
 #include <glad/glad.h>
+#include <speech.h>
+#include <dr_mp3.h>
+#include <dr_wav.h>
 #endif
 
 #if defined(_BENZYNA) && defined(_WIN32)
@@ -47,6 +50,7 @@ typedef unsigned char ba_bool;
 
 #define ba_false ((ba_bool)0)
 #define ba_true ((ba_bool)1)
+#define ba_audio_rate 48000
 
 typedef struct ba_runtime_param	   ba_runtime_param_t;
 typedef struct ba_runtime	   ba_runtime_t;
@@ -65,6 +69,8 @@ typedef struct ba_block_handlerkv  ba_block_handlerkv_t;
 typedef struct ba_shadow_handlerkv ba_shadow_handlerkv_t;
 typedef struct ba_thread_stack	   ba_thread_stack_t;
 typedef struct ba_thread_wait	   ba_thread_wait_t;
+typedef union ba_runtime_union	   ba_runtime_union_t;
+typedef struct ba_audio_stream	   ba_audio_stream_t;
 
 typedef unsigned char* (*ba_load_file_t)(ba_runtime_t* rt, const char* path, int* size);
 typedef void (*ba_swap_buffer_t)(ba_runtime_t* rt);
@@ -74,6 +80,8 @@ typedef ba_bool (*ba_thread_check_t)(ba_thread_t* thread);
 typedef int (*ba_thread_block_handler_t)(ba_thread_t* thread);
 typedef char* (*ba_thread_shadow_handler_t)(ba_thread_t* thread, ba_block_t* block);
 typedef void (*ba_free_t)(void* arg);
+typedef void (*ba_audio_stream_free_t)(ba_audio_stream_t* stream);
+typedef int (*ba_audio_stream_read_t)(ba_audio_stream_t* stream, short* buffer, int wanted);
 
 enum ba_input_type {
 	ba_input_number = 0, /* treat 4/5/6/7/8 as same thing */
@@ -91,15 +99,19 @@ enum ba_status {
 };
 
 #if defined(_BENZYNA)
-typedef struct ba_texture ba_texture_t;
-typedef struct ba_audio	  ba_audio_t;
+typedef struct ba_texture		 ba_texture_t;
+typedef struct ba_audio			 ba_audio_t;
+typedef struct ba_audio_stream_processor ba_audio_stream_processor_t;
 
-typedef cJSON ba_cJSON;
+typedef cJSON	     ba_cJSON;
+typedef struct zip_t ba_zip_t;
 #else
 typedef void ba_texture_t;
 typedef void ba_audio_t;
+typedef void ba_audio_stream_processor_t;
 
 typedef void ba_cJSON;
+typedef void ba_zip_t;
 #endif
 
 #if defined(_BENZYNA)
@@ -113,8 +125,34 @@ struct ba_audio {
 	ma_device	 device;
 	ma_device_config config;
 	ma_mutex	 mutex;
+
+	ba_audio_stream_t** streams;
+};
+
+struct ba_audio_stream_processor {
+	ma_resampler_config resampler_config;
+	ma_resampler	    resampler;
+
+	ma_channel_converter_config converter_config;
+	ma_channel_converter	    converter;
 };
 #endif
+
+struct ba_audio_stream {
+	ba_audio_t* audio;
+
+	ba_audio_stream_free_t free;
+	ba_audio_stream_read_t read;
+
+	void* opaque;
+
+	int rate;
+	int channel;
+
+	ba_bool paused;
+
+	ba_audio_stream_processor_t* processor;
+};
 
 struct ba_runtime_param {
 	ba_load_file_t	   load_file;
@@ -122,10 +160,11 @@ struct ba_runtime_param {
 	ba_make_current_t  make_current;
 	ba_swap_buffer_t   swap_buffer;
 	ba_bool		   turbo;
-	union {
-		const char*   root_path;
-		struct zip_t* zip;
-	};
+};
+
+union ba_runtime_union {
+	const char* root_path;
+	ba_zip_t*   zip;
 };
 
 struct ba_runtime {
@@ -143,6 +182,8 @@ struct ba_runtime {
 
 	ba_block_handlerkv_t*  block_handlers;
 	ba_shadow_handlerkv_t* shadow_handlers;
+
+	ba_runtime_union_t u;
 };
 
 struct ba_target {
@@ -287,8 +328,15 @@ BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_
 BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler);
 
 /* audio.c */
-BADECL ba_audio_t* ba_audio_open(void);
-BADECL void	   ba_audio_close(ba_audio_t* audio);
+BADECL ba_audio_t*	  ba_audio_open(void);
+BADECL void		  ba_audio_close(ba_audio_t* audio);
+BADECL ba_audio_stream_t* ba_audio_stream_new(ba_audio_t* audio);
+BADECL void		  ba_audio_lock(ba_audio_t* audio);
+BADECL void		  ba_audio_unlock(ba_audio_t* audio);
+BADECL void		  ba_audio_stream_free(ba_audio_stream_t* stream);
+BADECL void		  ba_audio_stream_set_paused(ba_audio_stream* stream, ba_bool paused);
+BADECL ba_bool		  ba_audio_stream_get_paused(ba_audio_stream* stream, ba_bool paused);
+BADECL void		  ba_audio_stream_init(ba_audio_stream_t* stream);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);
@@ -344,6 +392,7 @@ BADECL double ba_time_tick(void);
 /* blocks */
 BADECL void ba_block_motion(ba_runtime_t* rt);
 BADECL void ba_block_looks(ba_runtime_t* rt);
+BADECL void ba_block_sound(ba_runtime_t* rt);
 BADECL void ba_block_control(ba_runtime_t* rt);
 
 /* shadows */

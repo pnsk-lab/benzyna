@@ -220,6 +220,19 @@ static char* operator_not(ba_thread_t* thread, ba_block_t* block) {
 	return b;
 }
 
+static char* operator_join(ba_thread_t* thread, ba_block_t* block) {
+	char* str1 = NULL;
+	char* str2 = NULL;
+	char* b	   = NULL;
+
+	if((str1 = ba_thread_input2(thread, block, "STRING1")) != NULL && (str2 = ba_thread_input2(thread, block, "STRING2")) != NULL) b = ba_string_concat(str1, str2, NULL);
+
+	if(str1 != NULL) free(str1);
+	if(str2 != NULL) free(str2);
+
+	return b;
+}
+
 void ba_shadow_operator(ba_runtime_t* rt) {
 	ba_runtime_shadow_handler(rt, "operator_round", operator_round);
 	ba_runtime_shadow_handler(rt, "operator_add", operator_add);
@@ -232,5 +245,6 @@ void ba_shadow_operator(ba_runtime_t* rt) {
 	ba_runtime_shadow_handler(rt, "operator_gt", operator_gt);
 	ba_runtime_shadow_handler(rt, "operator_and", operator_and);
 	ba_runtime_shadow_handler(rt, "operator_or", operator_or);
-	ba_runtime_shadow_handler(rt, "operatnot_not", operator_not);
+	ba_runtime_shadow_handler(rt, "operator_not", operator_not);
+	ba_runtime_shadow_handler(rt, "operator_join", operator_join);
 }
