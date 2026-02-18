@@ -20,6 +20,8 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_sound(rt);
 	ba_block_control(rt);
 
+	ba_block_text2speech(rt);
+
 	ba_shadow_sound(rt);
 	ba_shadow_operator(rt);
 

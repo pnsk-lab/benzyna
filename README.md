@@ -1,3 +1,3 @@
 # Benzyna
 
-Scratch runtime in C
+Scratch exeuution environment in C

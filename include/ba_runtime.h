@@ -405,6 +405,7 @@ BADECL void ba_block_motion(ba_runtime_t* rt);
 BADECL void ba_block_looks(ba_runtime_t* rt);
 BADECL void ba_block_sound(ba_runtime_t* rt);
 BADECL void ba_block_control(ba_runtime_t* rt);
+BADECL void ba_block_text2speech(ba_runtime_t* rt);
 
 /* shadows */
 BADECL void ba_shadow_sound(ba_runtime_t* rt);
