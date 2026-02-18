@@ -51,6 +51,8 @@ int main(int argc, char** argv) {
 	}
 
 	while(1) {
+		glfwPollEvents();
+
 		ba_runtime_step(&ba);
 	}
 	ba_runtime_uninit(&ba);
