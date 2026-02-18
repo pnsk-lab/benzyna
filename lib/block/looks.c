@@ -29,8 +29,20 @@ static int looks_nextcostume(ba_thread_t* thread) {
 	return ba_status_next;
 }
 
+static int looks_nextbackdrop(ba_thread_t* thread) {
+	ba_sprite_t* sprite = ba_runtime_get_stage_sprite(thread->runtime);
+
+	if(sprite != NULL) {
+		sprite->costume++;
+		sprite->costume = sprite->costume % arrlen(sprite->target->costumes);
+	}
+
+	return ba_status_next;
+}
+
 void ba_block_looks(ba_runtime_t* rt) {
 	ba_runtime_block_handler(rt, "looks_say", looks_say);
 	ba_runtime_block_handler(rt, "looks_think", looks_think);
 	ba_runtime_block_handler(rt, "looks_nextcostume", looks_nextcostume);
+	ba_runtime_block_handler(rt, "looks_nextbackdrop", looks_nextbackdrop);
 }
