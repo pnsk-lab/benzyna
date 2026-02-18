@@ -120,6 +120,8 @@ struct ba_texture {
 };
 
 struct ba_audio {
+	ba_runtime_t* runtime;
+
 	ba_bool init;
 
 	ma_device	 device;
@@ -144,12 +146,14 @@ struct ba_audio_stream {
 	ba_audio_stream_free_t free;
 	ba_audio_stream_read_t read;
 
-	void* opaque;
+	void* opaque1;
+	void* opaque2;
 
 	int rate;
 	int channel;
 
 	ba_bool paused;
+	ba_bool autoclean;
 
 	ba_audio_stream_processor_t* processor;
 };
@@ -196,6 +200,7 @@ struct ba_target {
 	ba_stringlistkv_t* lists;
 	ba_blockkv_t*	   blocks;
 	ba_block_t**	   tree;
+	ba_stringkv_t*	   sounds;
 };
 
 struct ba_costume {
@@ -328,15 +333,21 @@ BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_
 BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler);
 
 /* audio.c */
-BADECL ba_audio_t*	  ba_audio_open(void);
+BADECL ba_audio_t*	  ba_audio_open(ba_runtime_t* rt);
 BADECL void		  ba_audio_close(ba_audio_t* audio);
 BADECL ba_audio_stream_t* ba_audio_stream_new(ba_audio_t* audio);
 BADECL void		  ba_audio_lock(ba_audio_t* audio);
 BADECL void		  ba_audio_unlock(ba_audio_t* audio);
 BADECL void		  ba_audio_stream_free(ba_audio_stream_t* stream);
-BADECL void		  ba_audio_stream_set_paused(ba_audio_stream* stream, ba_bool paused);
-BADECL ba_bool		  ba_audio_stream_get_paused(ba_audio_stream* stream, ba_bool paused);
+BADECL void		  ba_audio_stream_set_paused(ba_audio_stream_t* stream, ba_bool paused);
+BADECL ba_bool		  ba_audio_stream_get_paused(ba_audio_stream_t* stream);
+BADECL void		  ba_audio_stream_set_autoclean(ba_audio_stream_t* stream, ba_bool autoclean);
+BADECL void		  ba_audio_stream_set_rate(ba_audio_stream_t* stream, int rate);
+BADECL void		  ba_audio_stream_set_channel(ba_audio_stream_t* stream, int channel);
 BADECL void		  ba_audio_stream_init(ba_audio_stream_t* stream);
+
+/* audio_file.c */
+BADECL ba_audio_stream_t* ba_audio_file_open(ba_audio_t* audio, const char* path);
 
 /* render.c */
 BADECL void ba_render(ba_runtime_t* rt);

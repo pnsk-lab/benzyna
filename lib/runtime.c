@@ -23,7 +23,7 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_shadow_sound(rt);
 	ba_shadow_operator(rt);
 
-	if((rt->audio = ba_audio_open()) == NULL) {
+	if((rt->audio = ba_audio_open(rt)) == NULL) {
 		ba_runtime_uninit(rt);
 
 		return ba_false;

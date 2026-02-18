@@ -6,6 +6,7 @@ ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
 	cJSON*	     lists;
 	cJSON*	     costumes;
 	cJSON*	     blocks;
+	cJSON*	     sounds;
 	cJSON*	     isStage;
 	int	     i;
 
@@ -24,6 +25,11 @@ ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
 	}
 
 	if((costumes = cJSON_GetObjectItem(json, "costumes")) == NULL || costumes->type != cJSON_Array) {
+		ba_target_free(target);
+		return NULL;
+	}
+
+	if((sounds = cJSON_GetObjectItem(json, "sounds")) == NULL || sounds->type != cJSON_Array) {
 		ba_target_free(target);
 		return NULL;
 	}
@@ -108,6 +114,20 @@ ba_target_t* ba_target_parse(ba_runtime_t* rt, ba_cJSON* json) {
 		costumes = costumes->next;
 	}
 
+	sounds = sounds->child;
+	while(sounds != NULL) {
+		if(sounds->type == cJSON_Object) {
+			cJSON* name   = cJSON_GetObjectItem(sounds, "name");
+			cJSON* md5ext = cJSON_GetObjectItem(sounds, "md5ext");
+
+			if(name != NULL && md5ext != NULL && name->type == cJSON_String && md5ext->type == cJSON_String) {
+				shput(target->sounds, name->valuestring, md5ext->valuestring);
+			}
+		}
+
+		sounds = sounds->next;
+	}
+
 	sh_new_strdup(target->blocks);
 	shdefault(target->blocks, NULL);
 
@@ -167,6 +187,9 @@ void ba_target_free(ba_target_t* target) {
 	int i;
 
 	arrfree(target->tree);
+
+	for(i = 0; i < shlen(target->sounds); i++) free(target->sounds[i].value);
+	shfree(target->sounds);
 
 	for(i = 0; i < shlen(target->variables); i++) free(target->variables[i].value);
 	shfree(target->variables);
