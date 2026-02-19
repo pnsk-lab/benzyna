@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	while(1) {
+	while(!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
 		ba_runtime_step(&ba);
