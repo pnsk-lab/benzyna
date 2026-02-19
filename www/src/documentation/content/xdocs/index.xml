@@ -18,12 +18,12 @@
 <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
 <document>
   <header>
-    <title>Welcome to Benzyna website</title>
+    <title>Benzyna Scratch EE</title>
   </header>
   <body>
     <section>
-      <title>Wow</title>
-      <p>Epic</p>
+      <title>What is Benzyna?</title>
+      <p>Benzyna is a Scratch execution environemnt written in C, developed by <a href="https://github.com/pnsk-lab">pnsk-lab</a>.</p>
     </section>
   </body>
 </document>

@@ -28,7 +28,7 @@ which will be used to configure the chosen Forrest skin.
     no search box. @domain will enable sitesearch for the specific domain with google.
     In other words google will search the @domain for the query string.
   -->
-  <search name="Feather HTTPd" domain="moomoo.nishi.boats" provider="google"/>
+  <search name="Benzyna" domain="pnsk-lab.github.io" provider="google"/>
 <!-- Disable the print link? If enabled, invalid HTML 4.0.1 -->
   <disable-print-link>true</disable-print-link>
 <!-- Disable the PDF link? -->
@@ -145,34 +145,9 @@ which will be used to configure the chosen Forrest skin.
       page : on the face of the page, e.g. in the spare space of the toc
       alt : at the bottom of the left-hand navigation panel
       both : both
-    -->
- <motd>
-    <motd-option pattern="samples-b/index.html">
-      <motd-page location="both">
-        This is Samples 1 Documentation. There is 
-      </motd-page>
-      <motd-page-url>../samples-a/index.html</motd-page-url>
-    </motd-option>
-    <motd-option pattern="samples-c/index.html">
-      <motd-page location="both">
-        This is Samples 2 Documentation. There is 
-      </motd-page>
-      <motd-page-url>../samples-a/index.html</motd-page-url>
-    </motd-option>
-    <motd-option pattern="samples-b/sample.html">
-      <motd-title>sample</motd-title>
-      <motd-page location="both">
-        This is an example of a Message of the day (MOTD).
-      </motd-page>
-      <motd-page-url>faq.html</motd-page-url>
-    </motd-option>
-    <motd-option pattern="samples-b/faq.html">
-      <motd-page location="page">
-        How to enable this MOTD is on this page.
-      </motd-page>
-      <motd-page-url>http://forrest.apache.org/docs/faq.html</motd-page-url>
-    </motd-option>
+  <motd>
   </motd>
+    -->
 <!--
     extra-css - here you can define custom css-elements that are 
     A) overriding the fallback elements or 

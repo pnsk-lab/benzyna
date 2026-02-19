@@ -36,13 +36,14 @@ See http://forrest.apache.org/docs/linking.html for more info
   always use index.html when you request http://yourHost/
   See FAQ: "How can I use a start-up-page other than index.html?"
 -->
-<site label="Feather HTTPd" href="" tab=""
+<site label="Benzyna" href="" tab=""
   xmlns="http://apache.org/forrest/linkmap/1.0"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   >
-  <about label="About">
-    <index label="Index" href="index.html" description="Welcome to Feather HTTPd"/>
-    <linkmap label="Documentation ToC" href="linkmap.html" description="Table of Contents for this example site"/>
+  <about label="Benzyna">
+    <index label="Home" href="index.html" description="Benzyna Scratch EE"/>
+    <source label="Source" href="https://github.com/pnsk-lab/benzyna" description="GitHub" />
+    <linkmap label="Documentation ToC" href="linkmap.html" description="Table of Contests"/>
   </about>
 <!--
   The href must be wholesite.html/pdf  You can change the labels and node names
