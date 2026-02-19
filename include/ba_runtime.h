@@ -164,6 +164,7 @@ struct ba_runtime_param {
 	ba_make_current_t  make_current;
 	ba_swap_buffer_t   swap_buffer;
 	ba_bool		   turbo;
+	double		   fps;
 };
 
 union ba_runtime_union {
@@ -188,6 +189,8 @@ struct ba_runtime {
 	ba_shadow_handlerkv_t* shadow_handlers;
 
 	ba_runtime_union_t u;
+
+	double last_tick;
 };
 
 struct ba_target {
@@ -399,6 +402,7 @@ BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
 
 /* time.c */
 BADECL double ba_time_tick(void);
+BADECL void   ba_time_sleep(double tick);
 
 /* blocks */
 BADECL void ba_block_motion(ba_runtime_t* rt);

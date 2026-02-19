@@ -22,10 +22,19 @@ int main(int argc, char** argv) {
 	int	     i;
 
 	ba.param.turbo = ba_false;
+	ba.param.fps   = 30;
 
 	for(i = 1; i < argc; i++) {
 		if(strcmp(argv[i], "--turbo") == 0) {
 			ba.param.turbo = ba_true;
+		} else if(strcmp(argv[i], "--vsync") == 0) {
+			ba.param.fps = 0;
+		} else if(strcmp(argv[i], "--fps") == 0) {
+			if(argv[i + 1] == NULL) {
+				fprintf(stderr, "%s: --fps needs argument\n", argv[0]);
+				return 1;
+			}
+			ba.param.fps = atof(argv[i + 1]);
 		} else {
 			argv1 = argv[i];
 		}

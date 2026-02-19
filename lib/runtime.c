@@ -39,7 +39,9 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 		first = ba_false;
 	}
 
-	if(rt->param.swap_interval != NULL) rt->param.swap_interval(rt, rt->param.turbo ? 0 : 1);
+	if(rt->param.swap_interval != NULL) rt->param.swap_interval(rt, (rt->param.turbo || rt->param.fps != 0) ? 0 : 1);
+
+	rt->last_tick = ba_time_tick();
 
 	glEnable(GL_BLEND);
 
@@ -114,6 +116,14 @@ ba_bool ba_runtime_load_project(ba_runtime_t* rt, const char* data, int size) {
 void ba_runtime_step(ba_runtime_t* rt) {
 	int	i;
 	ba_bool loop;
+
+	if(!rt->param.turbo && rt->param.fps != 0) {
+		double t;
+
+		t = (1.0 / rt->param.fps) - (ba_time_tick() - rt->last_tick);
+		if(t > 0) ba_time_sleep(t);
+		rt->last_tick += 1.0 / rt->param.fps;
+	}
 
 	do {
 		loop = ba_false;
