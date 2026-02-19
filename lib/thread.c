@@ -17,7 +17,7 @@ ba_thread_t* ba_thread_start(ba_runtime_t* rt, ba_block_t* block) {
 }
 
 void ba_thread_stop(ba_thread_t* thread) {
-	thread->stopped	  = ba_true;
+	thread->_stopped  = ba_true;
 	thread->autoclean = ba_true;
 }
 
@@ -37,7 +37,7 @@ void ba_thread_step(ba_thread_t* thread) {
 recheck:;
 	if(thread->block == NULL) {
 		if(arrlen(thread->stack) == 0) {
-			thread->stopped = ba_true;
+			thread->_stopped = ba_true;
 		} else {
 			int n = arrlen(thread->stack) - 1;
 

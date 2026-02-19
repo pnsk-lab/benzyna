@@ -18,6 +18,7 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_motion(rt);
 	ba_block_looks(rt);
 	ba_block_sound(rt);
+	ba_block_event(rt);
 	ba_block_control(rt);
 
 	ba_block_text2speech(rt);
@@ -128,7 +129,6 @@ void ba_runtime_step(ba_runtime_t* rt) {
 	do {
 		loop = ba_false;
 		for(i = 0; i < arrlen(rt->threads); i++) {
-			if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
 			if(rt->threads[i]->wait.check != NULL && rt->threads[i]->wait.check(rt->threads[i])) continue;
 
 			if(rt->threads[i]->wait.check != NULL) {
@@ -136,6 +136,9 @@ void ba_runtime_step(ba_runtime_t* rt) {
 
 				memset(&rt->threads[i]->wait, 0, sizeof(rt->threads[i]->wait));
 			}
+
+			if(rt->threads[i]->_stopped) rt->threads[i]->stopped = ba_true;
+			if(rt->threads[i]->vsync || rt->threads[i]->stopped) continue;
 
 			loop = ba_true;
 

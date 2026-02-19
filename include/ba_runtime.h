@@ -79,7 +79,7 @@ typedef void (*ba_swap_interval_t)(ba_runtime_t* rt, int interval);
 typedef ba_bool (*ba_thread_check_t)(ba_thread_t* thread);
 typedef int (*ba_thread_block_handler_t)(ba_thread_t* thread);
 typedef char* (*ba_thread_shadow_handler_t)(ba_thread_t* thread, ba_block_t* block);
-typedef void (*ba_free_t)(void* arg);
+typedef void (*ba_free_arg_t)(void* arg);
 typedef void (*ba_audio_stream_free_t)(ba_audio_stream_t* stream);
 typedef int (*ba_audio_stream_read_t)(ba_audio_stream_t* stream, short* buffer, int wanted);
 
@@ -249,13 +249,13 @@ struct ba_thread_stack {
 	ba_block_t*	  escape; /* where to escape to, if not loop */
 	ba_thread_check_t check;  /* if function is non NULL and returns true, go loop */
 	void*		  arg;
-	ba_free_t	  free_arg;
+	ba_free_arg_t	  free_arg;
 };
 
 struct ba_thread_wait {
 	ba_thread_check_t check;
 	void*		  arg;
-	ba_free_t	  free_arg;
+	ba_free_arg_t	  free_arg;
 };
 
 struct ba_thread {
@@ -267,6 +267,7 @@ struct ba_thread {
 	ba_thread_stack_t* stack;
 
 	ba_bool vsync;
+	ba_bool _stopped; /* this is flagged even if wait is still pending! check stopped instead */
 	ba_bool stopped;
 	ba_bool autoclean;
 
@@ -408,6 +409,7 @@ BADECL void   ba_time_sleep(double tick);
 BADECL void ba_block_motion(ba_runtime_t* rt);
 BADECL void ba_block_looks(ba_runtime_t* rt);
 BADECL void ba_block_sound(ba_runtime_t* rt);
+BADECL void ba_block_event(ba_runtime_t* rt);
 BADECL void ba_block_control(ba_runtime_t* rt);
 BADECL void ba_block_text2speech(ba_runtime_t* rt);
 

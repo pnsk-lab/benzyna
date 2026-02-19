@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	if(!ba_runtime_load_path(&ba, argv[1])) {
+	if(!ba_runtime_load_path(&ba, argv1)) {
 		ba_runtime_uninit(&ba);
 		return 1;
 	}
