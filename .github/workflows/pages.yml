@@ -36,7 +36,7 @@ jobs:
         distribution: 'temurin'
         java-version: '8'
     - name: Setup Forrest
-      run: wget https://archive.apache.org/dist/forrest/apache-forrest-0.9.tar.gz && tar xvf apache-forrest-0.9.tar.gz && mv apache-forrest-0.9 /usr/forrest && echo "/usr/forrest/bin" >> $GITHUB_PATH
+      run: wget https://archive.apache.org/dist/forrest/apache-forrest-0.9.tar.gz && tar xvf apache-forrest-0.9.tar.gz && sudo mv apache-forrest-0.9 /usr/forrest && echo "/usr/forrest/bin" >> $GITHUB_PATH
     - name: Build site
       run: cd www && forrest
     - name: Setup pages
