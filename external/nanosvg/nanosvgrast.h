@@ -321,7 +321,7 @@ static void nsvg__addEdge(NSVGrasterizer* r, float x0, float y0, float x1, float
 
 static float nsvg__normalize(float *x, float* y)
 {
-	float d = sqrtf((*x)*(*x) + (*y)*(*y));
+	float d = sqrt((*x)*(*x) + (*y)*(*y));
 	if (d > 1e-6f) {
 		float id = 1.0f / d;
 		*x *= id;
@@ -331,7 +331,7 @@ static float nsvg__normalize(float *x, float* y)
 }
 
 static float nsvg__absf(float x) { return x < 0 ? -x : x; }
-static float nsvg__roundf(float x) { return (x >= 0) ? floorf(x + 0.5) : ceilf(x - 0.5); }
+static float nsvg__roundf(float x) { return (x >= 0) ? floor(x + 0.5) : ceil(x - 0.5); }
 
 static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 								  float x1, float y1, float x2, float y2,
@@ -463,7 +463,7 @@ static void nsvg__roundCap(NSVGrasterizer* r, NSVGpoint* left, NSVGpoint* right,
 
 	for (i = 0; i < ncap; i++) {
 		float a = (float)i/(float)(ncap-1)*NSVG_PI;
-		float ax = cosf(a) * w, ay = sinf(a) * w;
+		float ax = cos(a) * w, ay = sin(a) * w;
 		float x = px - dlx*ax - dx*ay;
 		float y = py - dly*ax - dy*ay;
 
@@ -551,15 +551,15 @@ static void nsvg__roundJoin(NSVGrasterizer* r, NSVGpoint* left, NSVGpoint* right
 	float w = lineWidth * 0.5f;
 	float dlx0 = p0->dy, dly0 = -p0->dx;
 	float dlx1 = p1->dy, dly1 = -p1->dx;
-	float a0 = atan2f(dly0, dlx0);
-	float a1 = atan2f(dly1, dlx1);
+	float a0 = atan2(dly0, dlx0);
+	float a1 = atan2(dly1, dlx1);
 	float da = a1 - a0;
 	float lx, ly, rx, ry;
 
 	if (da < NSVG_PI) da += NSVG_PI*2;
 	if (da > NSVG_PI) da -= NSVG_PI*2;
 
-	n = (int)ceilf((nsvg__absf(da) / NSVG_PI) * (float)ncap);
+	n = (int)ceil((nsvg__absf(da) / NSVG_PI) * (float)ncap);
 	if (n < 2) n = 2;
 	if (n > ncap) n = ncap;
 
@@ -571,7 +571,7 @@ static void nsvg__roundJoin(NSVGrasterizer* r, NSVGpoint* left, NSVGpoint* right
 	for (i = 0; i < n; i++) {
 		float u = (float)i/(float)(n-1);
 		float a = a0 + u*da;
-		float ax = cosf(a) * w, ay = sinf(a) * w;
+		float ax = cos(a) * w, ay = sin(a) * w;
 		float lx1 = p1->x - ax, ly1 = p1->y - ay;
 		float rx1 = p1->x + ax, ry1 = p1->y + ay;
 
@@ -601,8 +601,8 @@ static void nsvg__straightJoin(NSVGrasterizer* r, NSVGpoint* left, NSVGpoint* ri
 
 static int nsvg__curveDivs(float r, float arc, float tol)
 {
-	float da = acosf(r / (r + tol)) * 2.0f;
-	int divs = (int)ceilf(arc / da);
+	float da = acos(r / (r + tol)) * 2.0f;
+	int divs = (int)ceil(arc / da);
 	if (divs < 2) divs = 2;
 	return divs;
 }
@@ -789,7 +789,7 @@ static void nsvg__flattenShapeStroke(NSVGrasterizer* r, NSVGshape* shape, float 
 			if (shape->strokeDashCount & 1)
 				allDashLen *= 2.0f;
 			// Find location inside pattern
-			dashOffset = fmodf(shape->strokeDashOffset, allDashLen);
+			dashOffset = fmod(shape->strokeDashOffset, allDashLen);
 			if (dashOffset < 0.0f)
 				dashOffset += allDashLen;
 
@@ -802,7 +802,7 @@ static void nsvg__flattenShapeStroke(NSVGrasterizer* r, NSVGshape* shape, float 
 			for (j = 1; j < r->npoints2; ) {
 				float dx = r->points2[j].x - cur.x;
 				float dy = r->points2[j].y - cur.y;
-				float dist = sqrtf(dx*dx + dy*dy);
+				float dist = sqrt(dx*dx + dy*dy);
 
 				if ((totalDist + dist) > dashLen) {
 					// Calculate intermediate point
@@ -1083,7 +1083,7 @@ static void nsvg__scanlineSolid(unsigned char* dst, int count, unsigned char* co
 			int r,g,b,a,ia;
 			gx = fx*t[0] + fy*t[2] + t[4];
 			gy = fx*t[1] + fy*t[3] + t[5];
-			gd = sqrtf(gx*gx + gy*gy);
+			gd = sqrt(gx*gx + gy*gy);
 			c = cache->colors[(int)nsvg__clampf(gd*255.0f, 0, 255.0f)];
 			cr = (c) & 0xff;
 			cg = (c >> 8) & 0xff;

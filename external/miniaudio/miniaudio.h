@@ -12040,7 +12040,7 @@ static MA_INLINE void ma_yield(void)
         #if _MSC_VER >= 1400
             _mm_pause();
         #else
-            #if defined(__DMC__)
+            #if defined(__DMC__) || defined(MA_YIELD_USE_NOP)
                 /* Digital Mars does not recognize the PAUSE opcode. Fall back to NOP. */
                 __asm nop;
             #else

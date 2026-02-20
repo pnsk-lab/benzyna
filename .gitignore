@@ -1,3 +1,5 @@
 /build
 /www/build
 /.cache
+/obj
+/bin

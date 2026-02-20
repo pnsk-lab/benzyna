@@ -4,7 +4,7 @@ project(benzyna)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB LIB_SOURCE lib/*.c lib/external/*.c lib/block/*.c lib/shadow/*.c)
-file(GLOB SOURCE src/*.c)
+file(GLOB SOURCE src/glfw.c)
 
 add_library(ba SHARED ${LIB_SOURCE})
 target_include_directories(ba PUBLIC include)

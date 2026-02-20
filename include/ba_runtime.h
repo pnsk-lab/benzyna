@@ -9,7 +9,10 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/stat.h>
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <io.h>
+#include <windows.h>
+#else
 #include <unistd.h>
 #endif
 
