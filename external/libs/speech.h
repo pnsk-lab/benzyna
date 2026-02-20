@@ -4578,9 +4578,9 @@ short* speech_gen(int* samples_pairs_generated, char const* str, void* memctx) {
 	x	    = 0;
 	prev_sample = 0;
 	while(x < sample_count) {
-		short sample = samples[pos];
+		short sample = samples[x];
 
-		samples[pos] = (prev_sample + 3 * sample) / 2;
+		samples[x] = (prev_sample + 3 * sample) / 2;
 
 		prev_sample = sample;
 

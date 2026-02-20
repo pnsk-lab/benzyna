@@ -20,6 +20,7 @@ static void swap_interval(ba_runtime_t* rt, int interval) {
 int main(int argc, char** argv) {
 	ba_runtime_t ba;
 	int	     i;
+	double scale = 1;
 
 	ba.param.turbo = ba_false;
 	ba.param.fps   = 30;
@@ -34,7 +35,13 @@ int main(int argc, char** argv) {
 				fprintf(stderr, "%s: --fps needs argument\n", argv[0]);
 				return 1;
 			}
-			ba.param.fps = atof(argv[i + 1]);
+			ba.param.fps = atof(argv[++i]);
+		} else if(strcmp(argv[i], "--scale") == 0) {
+			if(argv[i + 1] == NULL) {
+				fprintf(stderr, "%s: --scale needs argument\n", argv[0]);
+				return 1;
+			}
+			scale = atof(argv[++i]);
 		} else {
 			argv1 = argv[i];
 		}
@@ -44,7 +51,7 @@ int main(int argc, char** argv) {
 
 	glfwInit();
 
-	window = glfwCreateWindow(BA_WIDTH * 2, BA_HEIGHT * 2, "Benzyna Scratch Runtime", NULL, NULL);
+	window = glfwCreateWindow(BA_WIDTH * scale, BA_HEIGHT * scale, "Benzyna Scratch Runtime", NULL, NULL);
 
 	ba.param.make_current  = make_current;
 	ba.param.swap_buffer   = swap_buffer;
