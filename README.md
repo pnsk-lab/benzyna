@@ -2,4 +2,4 @@
 
 # Benzyna
 
-Scratch exeuution environment in C
+Scratch execution environment in C
