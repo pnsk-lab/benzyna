@@ -1,0 +1,3 @@
+#include <winver.h>
+
+BENZYNA ICON "../logo/logo.ico"
