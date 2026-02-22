@@ -20,7 +20,7 @@ static void swap_interval(ba_runtime_t* rt, int interval) {
 int main(int argc, char** argv) {
 	ba_runtime_t ba;
 	int	     i;
-	double scale = 1;
+	double	     scale = 1;
 
 	ba.param.turbo = ba_false;
 	ba.param.fps   = 30;

@@ -10,6 +10,11 @@ static int motion_movesteps(ba_thread_t* thread) {
 		thread->sprite->x += c * atof(str);
 		thread->sprite->y += s * atof(str);
 
+		if(thread->sprite->pen != NULL) {
+			arrput(thread->sprite->pen->coords, thread->sprite->x);
+			arrput(thread->sprite->pen->coords, thread->sprite->y);
+		}
+
 		free(str);
 	}
 
@@ -58,6 +63,11 @@ static int motion_gotoxy(ba_thread_t* thread) {
 	if((str1 = ba_thread_input(thread, "X")) != NULL && (str2 = ba_thread_input(thread, "Y")) != NULL) {
 		thread->sprite->x = atof(str1);
 		thread->sprite->y = atof(str2);
+
+		if(thread->sprite->pen != NULL) {
+			arrput(thread->sprite->pen->coords, thread->sprite->x);
+			arrput(thread->sprite->pen->coords, thread->sprite->y);
+		}
 	}
 
 	if(str1 != NULL) free(str1);

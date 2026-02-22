@@ -40,9 +40,36 @@ void ba_render(ba_runtime_t* rt) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_TEXTURE_2D);
+	/* draw stage */
 	for(i = 0; i < arrlen(rt->sprites); i++) {
 		if(rt->sprites[i]->target->stage) draw_sprite(rt, rt->sprites[i]);
 	}
+	glDisable(GL_TEXTURE_2D);
+
+	for(i = 0; i < arrlen(rt->pens); i++) {
+		glColor3f(rt->pens[i]->color[0], rt->pens[i]->color[1], rt->pens[i]->color[2]);
+
+		if(arrlen(rt->pens[i]->coords) == 2) {
+			glBegin(GL_POINT);
+			glVertex2f(rt->pens[i]->coords[0], rt->pens[i]->coords[1]);
+			glEnd();
+		} else if(arrlen(rt->pens[i]->coords) > 2) {
+			GLfloat* c = malloc(sizeof(*c) * arrlen(rt->pens[i]->coords));
+			int	 j;
+
+			for(j = 0; j < arrlen(rt->pens[i]->coords); j++) c[j] = rt->pens[i]->coords[j];
+
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(2, GL_FLOAT, 0, c);
+			glDrawArrays(GL_LINE_STRIP, 0, arrlen(rt->pens[i]->coords) / 2);
+			glDisableClientState(GL_VERTEX_ARRAY);
+
+			free(c);
+		}
+	}
+
+	glEnable(GL_TEXTURE_2D);
+	/* draw sprites. */
 	for(i = 0; i < arrlen(rt->sprites); i++) {
 		if(!rt->sprites[i]->target->stage) draw_sprite(rt, rt->sprites[i]);
 	}

@@ -12,6 +12,10 @@ ba_sprite_t* ba_sprite_start(ba_runtime_t* rt, ba_target_t* target) {
 	sprite->y     = 0;
 	sprite->angle = 0;
 
+	sprite->pen_color[0] = 0;
+	sprite->pen_color[1] = 0;
+	sprite->pen_color[2] = 1;
+
 	arrput(rt->sprites, sprite);
 
 	sh_new_strdup(sprite->variables);

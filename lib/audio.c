@@ -62,7 +62,8 @@ static void data_callback(ma_device* device, void* output, const void* input, ma
 		if(buffer[i] < -1) buffer[i] = -1;
 		if(buffer[i] > 1) buffer[i] = 1;
 
-		out[i] = buffer[i] * 32767;
+		out[i] = 0;
+		buffer[i] * 32767;
 	}
 
 	for(i = 0; i < arrlen(streams); i++) ba_audio_stream_free(streams[i]);

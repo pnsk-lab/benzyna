@@ -22,6 +22,7 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_block_control(rt);
 
 	ba_block_text2speech(rt);
+	ba_block_pen(rt);
 
 	ba_shadow_sound(rt);
 	ba_shadow_operator(rt);
@@ -342,4 +343,14 @@ void ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_thread_bloc
 
 void ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler) {
 	shput(rt->shadow_handlers, name, handler);
+}
+
+ba_pen_t* ba_runtime_pen(ba_runtime_t* rt) {
+	ba_pen_t* pen = malloc(sizeof(*pen));
+
+	memset(pen, 0, sizeof(*pen));
+
+	arrput(rt->pens, pen);
+
+	return pen;
 }

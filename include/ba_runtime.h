@@ -74,6 +74,7 @@ typedef struct ba_thread_stack	   ba_thread_stack_t;
 typedef struct ba_thread_wait	   ba_thread_wait_t;
 typedef union ba_runtime_union	   ba_runtime_union_t;
 typedef struct ba_audio_stream	   ba_audio_stream_t;
+typedef struct ba_pen		   ba_pen_t;
 
 typedef unsigned char* (*ba_load_file_t)(ba_runtime_t* rt, const char* path, int* size);
 typedef void (*ba_swap_buffer_t)(ba_runtime_t* rt);
@@ -175,12 +176,19 @@ union ba_runtime_union {
 	ba_zip_t*   zip;
 };
 
+struct ba_pen {
+	double color[3];
+
+	double* coords;
+};
+
 struct ba_runtime {
 	ba_cJSON* json;
 
 	ba_target_t** targets;
 	ba_thread_t** threads;
 	ba_sprite_t** sprites;
+	ba_pen_t**    pens;
 
 	ba_audio_t* audio;
 
@@ -299,6 +307,9 @@ struct ba_inputkv {
 
 struct ba_sprite {
 	ba_target_t* target;
+	double	     pen_color[3];
+
+	ba_pen_t* pen;
 
 	int costume;
 
@@ -338,6 +349,7 @@ BADECL ba_sprite_t* ba_runtime_get_stage_sprite(ba_runtime_t* rt);
 BADECL ba_bool	    ba_runtime_load_path(ba_runtime_t* rt, const char* path);
 BADECL void	    ba_runtime_block_handler(ba_runtime_t* rt, const char* name, ba_thread_block_handler_t handler);
 BADECL void	    ba_runtime_shadow_handler(ba_runtime_t* rt, const char* name, ba_thread_shadow_handler_t handler);
+BADECL ba_pen_t*    ba_runtime_pen(ba_runtime_t* rt);
 
 /* audio.c */
 BADECL ba_audio_t*	  ba_audio_open(ba_runtime_t* rt);
@@ -415,6 +427,7 @@ BADECL void ba_block_sound(ba_runtime_t* rt);
 BADECL void ba_block_event(ba_runtime_t* rt);
 BADECL void ba_block_control(ba_runtime_t* rt);
 BADECL void ba_block_text2speech(ba_runtime_t* rt);
+BADECL void ba_block_pen(ba_runtime_t* rt);
 
 /* shadows */
 BADECL void ba_shadow_sound(ba_runtime_t* rt);
