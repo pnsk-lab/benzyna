@@ -27,6 +27,8 @@ ba_bool ba_runtime_init(ba_runtime_t* rt) {
 	ba_shadow_sound(rt);
 	ba_shadow_operator(rt);
 
+	ba_shadow_pen(rt);
+
 	if((rt->audio = ba_audio_open(rt)) == NULL) {
 		ba_runtime_uninit(rt);
 
@@ -165,6 +167,12 @@ void ba_runtime_uninit(ba_runtime_t* rt) {
 		i--;
 	}
 	arrfree(rt->threads);
+
+	for(i = 0; i < arrlen(rt->pens); i++) {
+		arrfree(rt->pens[i]->coords);
+		free(rt->pens[i]);
+	}
+	arrfree(rt->pens);
 
 	for(i = 0; i < arrlen(rt->sprites); i++) ba_sprite_kill(rt, rt->sprites[i]);
 	arrfree(rt->sprites);

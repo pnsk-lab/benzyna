@@ -420,6 +420,10 @@ BADECL char* ba_exec(ba_thread_t* thread, ba_input_t* value);
 BADECL double ba_time_tick(void);
 BADECL void   ba_time_sleep(double tick);
 
+/* hsv.c */
+BADECL void ba_hsv_from_rgb(double hsv[3], double rgb[3]);
+BADECL void ba_hsv_to_rgb(double rgb[3], double hsv[3]);
+
 /* blocks */
 BADECL void ba_block_motion(ba_runtime_t* rt);
 BADECL void ba_block_looks(ba_runtime_t* rt);
@@ -432,5 +436,6 @@ BADECL void ba_block_pen(ba_runtime_t* rt);
 /* shadows */
 BADECL void ba_shadow_sound(ba_runtime_t* rt);
 BADECL void ba_shadow_operator(ba_runtime_t* rt);
+BADECL void ba_shadow_pen(ba_runtime_t* rt);
 
 #endif

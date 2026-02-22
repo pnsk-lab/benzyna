@@ -47,7 +47,11 @@ void ba_render(ba_runtime_t* rt) {
 	glDisable(GL_TEXTURE_2D);
 
 	for(i = 0; i < arrlen(rt->pens); i++) {
-		glColor3f(rt->pens[i]->color[0], rt->pens[i]->color[1], rt->pens[i]->color[2]);
+		double rgb[3];
+
+		ba_hsv_to_rgb(rgb, rt->pens[i]->color);
+
+		glColor3f(rgb[0], rgb[1], rgb[2]);
 
 		if(arrlen(rt->pens[i]->coords) == 2) {
 			glBegin(GL_POINT);
