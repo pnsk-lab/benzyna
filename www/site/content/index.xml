@@ -1,33 +1,12 @@
 <?xml version="1.0"?>
 <document>
 	<header>
-		<title>Welcome to template</title>
+		<title>Benzyna Scratch EE</title>
 	</header>
 	<body>
-		<fixme>
-			Please read this!
-		</fixme>
-		<warning>
-			Please read this!
-		</warning>
-		<note>
-			Please read this!
-		</note>
-		<table>
-			<tr>
-				<th>Test</th>
-				<th>Test</th>
-			</tr>
-			<tr>
-				<td>Test</td>
-				<td>Test</td>
-			</tr>
-		</table>
-		<section id="congrats" title="Congratulations">
+		<section id="whatis" title="What is Benzyna?">
 			<p>
-				You have successfully generated and rendered a website using Taiga - static website generator.
-				This page is from the site template. It is found in <code>site/content/index.xml</code>.
-				Please edit it and replace this text with content of your own.
+				Benzyna is a Scratch execution environemnt written in C, developed by <a href="https://github.com/pnsk-lab">pnsk-lab</a>.
 			</p>
 		</section>
 	</body>

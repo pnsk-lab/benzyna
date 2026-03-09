@@ -8,40 +8,33 @@
 <skinconfig>
 	<search domain="example.com" />
 	<breadcrumb>
-		<link name="Example Co, Ltd" href="https://example.com" />
-		<link name="Example Project" href="https://example.com" />
+		<link name="pnsk-lab" href="https://pnsk-lab.github.io" />
+		<link name="Benzyna" href="https://pnsk-lab.github.io/benzynaz" />
 	</breadcrumb>
 	<group>
-		<name>Example Co, Ltd</name>
-		<description>Example Co, Ltd Description</description>
-		<link href="https://example.com" />
+		<name>pnsk-lab</name>
+		<description>pnsk-lab</description>
+		<link href="https://pnsk-lab.github.io" />
 		<image src="image/group-logo.png" />
 	</group>
 	<project>
-		<name>Example Project</name>
-		<description>Example Project Description</description>
-		<link href="https://example.com" />
+		<name>Benzyna</name>
+		<description>A Scratch execution environment</description>
+		<link href="https://pnsk-lab.github.io/benzyna" />
 		<image src="image/project-logo.png" />
 	</project>
 	<nav>
-		<group title="Example Project">
+		<group title="Benzyna">
 			<link name="Home" href="/" />
-			<link name="Example Co, Ltd." href="https://example.com" />
-			<group title="Example Project">
-				<link name="Home" href="/" />
-				<link name="Example Co, Ltd." href="https://example.com" />
-			</group>
 		</group>
 	</nav>
 	<favicon></favicon>
 	<extra-css></extra-css>
 	<skin>classic</skin> <!-- classic or simple -->
 	<copyright>
-		<holder>Example Co, Ltd</holder>
+		<holder>pnsk-lab</holder>
 		<year>2026</year> <!-- Year when you started this project/whatever copyright holder -->
-		<link href="https://example.com" />
+		<link href="https://pnsk-lab.github.io" />
 	</copyright>
-	<footer>
-		<p>This part is shared between files!</p>
-	</footer>
+	<footer></footer>
 </skinconfig>
