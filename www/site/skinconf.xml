@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+	NOTE!
+	  - Relative path in this config is relative to site/content
+	  - If relative path starts from ./ or ../, it's relative to URL when accessed
+	  - This rule applies to footer's src/href too
+-->
+<skinconfig>
+	<search domain="example.com" />
+	<breadcrumb>
+		<link name="Example Co, Ltd" href="https://example.com" />
+		<link name="Example Project" href="https://example.com" />
+	</breadcrumb>
+	<group>
+		<name>Example Co, Ltd</name>
+		<description>Example Co, Ltd Description</description>
+		<link href="https://example.com" />
+		<image src="image/group-logo.png" />
+	</group>
+	<project>
+		<name>Example Project</name>
+		<description>Example Project Description</description>
+		<link href="https://example.com" />
+		<image src="image/project-logo.png" />
+	</project>
+	<nav>
+		<group title="Example Project">
+			<link name="Home" href="/" />
+			<link name="Example Co, Ltd." href="https://example.com" />
+			<group title="Example Project">
+				<link name="Home" href="/" />
+				<link name="Example Co, Ltd." href="https://example.com" />
+			</group>
+		</group>
+	</nav>
+	<favicon></favicon>
+	<extra-css></extra-css>
+	<skin>classic</skin> <!-- classic or simple -->
+	<copyright>
+		<holder>Example Co, Ltd</holder>
+		<year>2026</year> <!-- Year when you started this project/whatever copyright holder -->
+		<link href="https://example.com" />
+	</copyright>
+	<footer>
+		<p>This part is shared between files!</p>
+	</footer>
+</skinconfig>

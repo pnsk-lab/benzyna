@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<document>
+	<header>
+		<title>Welcome to template</title>
+	</header>
+	<body>
+		<fixme>
+			Please read this!
+		</fixme>
+		<warning>
+			Please read this!
+		</warning>
+		<note>
+			Please read this!
+		</note>
+		<table>
+			<tr>
+				<th>Test</th>
+				<th>Test</th>
+			</tr>
+			<tr>
+				<td>Test</td>
+				<td>Test</td>
+			</tr>
+		</table>
+		<section id="congrats" title="Congratulations">
+			<p>
+				You have successfully generated and rendered a website using Taiga - static website generator.
+				This page is from the site template. It is found in <code>site/content/index.xml</code>.
+				Please edit it and replace this text with content of your own.
+			</p>
+		</section>
+	</body>
+</document>
